@@ -93,7 +93,7 @@ namespace BenchmarkNet {
 			"Hazel"
 		};
 
-		private static Func<int, string> Space = (v) => ("".PadRight(v));
+		private static Func<int, string> Space = (value) => ("".PadRight(value));
 		
 		private static void Main() {
 			Console.Title = title;
@@ -186,7 +186,7 @@ namespace BenchmarkNet {
 				Library.Initialize();
 
 			maxPeers = ushort.MaxValue;
-			maxClientsPass = (selectedNetworkingLibrary > 0 ? maxClients <= maxPeers : maxClients <= Native.ENET_PROTOCOL_MAXIMUM_PEER_ID);
+			maxClientsPass = (selectedNetworkingLibrary > 0 ? maxClients <= maxPeers : maxClients <= ENet.Native.ENET_PROTOCOL_MAXIMUM_PEER_ID);
 
 			if (!maxClientsPass)
 				maxClients = Math.Min(Math.Max((ushort)1, (ushort)maxClients), (selectedNetworkingLibrary > 0 ? maxPeers : (ushort)Native.ENET_PROTOCOL_MAXIMUM_PEER_ID));
