@@ -350,30 +350,30 @@ namespace BenchmarkNet {
 			using (Host server = new Host()) {
 				server.Create(port, maxClients);
 				
-				Event serverEvent = new Event();
+				Event netEvent = new Event();
 
 				while (processActive) {
-					server.Service(1000 / serverTickRate, out serverEvent);
+					server.Service(1000 / serverTickRate, out netEvent);
 
-					switch (serverEvent.Type) {
+					switch (netEvent.Type) {
 						case EventType.Receive:
-							byte[] data = serverEvent.Packet.GetBytes();
+							byte[] data = netEvent.Packet.GetBytes();
 
-							if (serverEvent.ChannelID == 2) {
+							if (netEvent.ChannelID == 2) {
 								Interlocked.Increment(ref serverReliableReceived);
-								SendReliable(messageData, 0, serverEvent.Peer);
+								SendReliable(messageData, 0, netEvent.Peer);
 								Interlocked.Increment(ref serverReliableSent);
 								Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
 								Interlocked.Add(ref serverReliableBytesReceived, data.Length);
-							} else if (serverEvent.ChannelID == 3) {
+							} else if (netEvent.ChannelID == 3) {
 								Interlocked.Increment(ref serverUnreliableReceived);
-								SendUnreliable(messageData, 1, serverEvent.Peer);
+								SendUnreliable(messageData, 1, netEvent.Peer);
 								Interlocked.Increment(ref serverUnreliableSent);
 								Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
 								Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
 							}
 
-							serverEvent.Packet.Dispose();
+							netEvent.Packet.Dispose();
 
 							break;
 					}
@@ -393,7 +393,7 @@ namespace BenchmarkNet {
 				address.Port = port;
 
 				Peer peer = client.Connect(address, 4, 0);
-				Event clientEvent = new Event();
+				Event netEvent = new Event();
 				
 				int reliableToSend = 0;
 				int unreliableToSend = 0;
@@ -423,9 +423,9 @@ namespace BenchmarkNet {
 				}, TaskCreationOptions.LongRunning);
 
 				while (processActive) {
-					client.Service(1000 / clientTickRate, out clientEvent);
+					client.Service(1000 / clientTickRate, out netEvent);
 
-					switch (clientEvent.Type) {
+					switch (netEvent.Type) {
 						case EventType.Connect:
 							Interlocked.Increment(ref clientsConnectedCount);
 							Interlocked.Exchange(ref reliableToSend, reliableMessages);
@@ -439,17 +439,17 @@ namespace BenchmarkNet {
 							break;
 
 						case EventType.Receive:
-							byte[] data = clientEvent.Packet.GetBytes();
+							byte[] data = netEvent.Packet.GetBytes();
 
-							if (clientEvent.ChannelID == 0) {
+							if (netEvent.ChannelID == 0) {
 								Interlocked.Increment(ref clientsReliableReceived);
 								Interlocked.Add(ref clientsReliableBytesReceived, data.Length);
-							} else if (clientEvent.ChannelID == 1) {
+							} else if (netEvent.ChannelID == 1) {
 								Interlocked.Increment(ref clientsUnreliableReceived);
 								Interlocked.Add(ref clientsUnreliableBytesReceived, data.Length);
 							}
 							
-							clientEvent.Packet.Dispose();
+							netEvent.Packet.Dispose();
 
 							break;
 					}
