@@ -93,6 +93,8 @@ namespace BenchmarkNet {
 			"Hazel"
 		};
 
+		private static Func<int, string> Space = (v) => ("".PadRight(v));
+		
 		private static void Main() {
 			Console.Title = title;
 			Console.SetIn(new StreamReader(Console.OpenStandardInput(8192), Console.InputEncoding, false, bufferSize: 1024));
@@ -236,7 +238,7 @@ namespace BenchmarkNet {
 						Console.ResetColor();
 					}
 
-					Console.WriteLine(Environment.NewLine + "Server status: " + (processOverload ? "Overload" : (processCompleted && serverThread.IsAlive ? "Completed" : (serverThread.IsAlive ? "Running" : "Failure"))));
+					Console.WriteLine(Environment.NewLine + "Server status: " + (processOverload ? "Overload" : (processCompleted && serverThread.IsAlive ? "Completed" : (serverThread.IsAlive ? "Running" + Space(2) : "Failure" + Space(2)))));
 					Console.WriteLine("Clients status: " + clientsStartedCount + " started, " + clientsConnectedCount + " connected, " + clientsDisconnectedCount + " dropped");
 					Console.WriteLine("Clients sent -> Reliable: " + clientsReliableSent + " messages (" + clientsReliableBytesSent + " bytes), Unreliable: " + clientsUnreliableSent + " messages (" + clientsUnreliableBytesSent + " bytes)");
 					Console.WriteLine("Server received <- Reliable: " + serverReliableReceived + " messages (" + serverReliableBytesReceived + " bytes), Unreliable: " + serverUnreliableReceived + " messages (" + serverUnreliableBytesReceived + " bytes)");
