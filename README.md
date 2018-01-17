@@ -15,6 +15,8 @@ Features:
 - Simple and flexible simulation setup
 - Detailed session information
 
+You can find the latest benchmark results on the [wiki page](https://github.com/nxrighthere/BenchmarkNet/wiki/Benchmark-Results).
+
 How it works?
 --------
 Each simulated client is one asynchronous task for establishing a connection with the server and processing the network events. Each task has one subtask which also works asynchronously to send network messages at a specified interval (15 messages per second by default). So, 1000 simulated clients is 1000 tasks with 1000 subtasks which works independently of each other. This sounds scary, but CPU usage is <1% for tasks itself and every operation is completely thread-safe. The clients send network messages to the server (500 reliable and 1000 unreliable by default). The server also sends messages to the clients in response (48 bytes per message by default). The application will monitor how the data is processed by the server and clients, and report their status in real-time.
@@ -29,7 +31,7 @@ If you want to simulate a bad network condition, use [Clumsy](http://jagt.github
 
 Discussion
 --------
-You can find the latest benchmark results in the [thread](https://forum.unity.com/threads/benchmarknet-stress-test-for-enet-unet-litenetlib-lidgren-and-miniudp.512507 "thread") on Unity forums.
+Feel free to join the discussion in the [thread](https://forum.unity.com/threads/benchmarknet-stress-test-for-enet-unet-litenetlib-lidgren-and-miniudp.512507 "thread") on Unity forums.
 
 If you have any questions, contact me via [email](mailto:nxrighthere@gmail.com "email").
 
