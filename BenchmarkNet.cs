@@ -958,15 +958,13 @@ namespace BenchmarkNet {
 				netEvent.Connection.DataReceived += (sender, data) => {
 					if (data.SendOption == SendOption.Reliable) {
 						Interlocked.Increment(ref serverReliableReceived);
-						Connection senderConnection = (Connection)sender;
-						senderConnection.SendBytes(messageData, SendOption.Reliable);
+						((Connection)sender).SendBytes(messageData, SendOption.Reliable);
 						Interlocked.Increment(ref serverReliableSent);
 						Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
 						Interlocked.Add(ref serverReliableBytesReceived, data.Bytes.Length);
 					} else if (data.SendOption == SendOption.None) {
 						Interlocked.Increment(ref serverUnreliableReceived);
-						Connection senderConnection = (Connection)sender;
-						senderConnection.SendBytes(messageData, SendOption.None);
+						((Connection)sender).SendBytes(messageData, SendOption.None);
 						Interlocked.Increment(ref serverUnreliableSent);
 						Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
 						Interlocked.Add(ref serverUnreliableBytesReceived, data.Bytes.Length);
