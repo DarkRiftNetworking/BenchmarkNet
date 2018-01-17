@@ -32,3 +32,7 @@ Discussion
 You can find the latest benchmark results in the [thread](https://forum.unity.com/threads/benchmarknet-stress-test-for-enet-unet-litenetlib-lidgren-and-miniudp.512507 "thread") on Unity forums.
 
 If you have any questions, contact me via [email](mailto:nxrighthere@gmail.com "email").
+
+Donations
+--------
+If you like this project, you can support me on [Bountysource](https://salt.bountysource.com/checkout/amount?team=nxrighthere), [Ko-fi](https://ko-fi.com/nxrighthere "Ko-fi") or [PayPal](https://www.paypal.me/nxrighthere "PayPal"). Any support is much appreciated.
