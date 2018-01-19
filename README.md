@@ -1,21 +1,15 @@
-# BenchmarkNet [![GitHub release](https://img.shields.io/github/release/nxrighthere/BenchmarkNet.svg)](https://github.com/nxrighthere/BenchmarkNet/releases) [![Bountysource](https://img.shields.io/badge/bountysource-donate-green.svg)](https://salt.bountysource.com/checkout/amount?team=nxrighthere)
-BenchmarkNet is a console application for testing the reliable UDP networking libraries.
+# BenchmarkNet
+BenchmarkNet is a console application for testing networking libraries written by nxrighthere.
 
-Supported networking libraries:
-- [ENet](https://github.com/lsalzman/enet "ENet") ([C# Wrapper](https://github.com/NateShoffner/ENetSharp "C# Wrapper"))
-- [UNet](https://docs.unity3d.com/Manual/UNetUsingTransport.html "UNet")
-- [LiteNetLib](https://github.com/RevenantX/LiteNetLib "LiteNetLib")
-- [Lidgren](https://github.com/lidgren/lidgren-network-gen3 "Lidgren")
-- [MiniUDP](https://github.com/ashoulson/MiniUDP "MiniUDP")
-- [Hazel](https://github.com/DarkRiftNetworking/Hazel-Networking "Hazel")
+This fork is used for stress testing DarkRift 2 with BenchmarkNet before releases.
+
+Please visit [BenchmarkNet's GitHub](https://github.com/nxrighthere/BenchmarkNet) for comparisons with other networking libraries and feel free to donate to the original author [![Bountysource](https://img.shields.io/badge/bountysource-donate-green.svg)](https://salt.bountysource.com/checkout/amount?team=nxrighthere)
 
 Features:
 - Asynchronous simulation of a large number of clients
 - Stable under high loads
 - Simple and flexible simulation setup
 - Detailed session information
-
-You can find the latest benchmark results on the [wiki page](https://github.com/nxrighthere/BenchmarkNet/wiki/Benchmark-Results).
 
 How it works?
 --------
@@ -31,12 +25,12 @@ If you want to simulate a bad network condition, use [Clumsy](http://jagt.github
 
 Discussion
 --------
-Feel free to join the discussion in the [thread](https://forum.unity.com/threads/benchmarknet-stress-test-for-enet-unet-litenetlib-lidgren-and-miniudp.512507 "thread") on Unity forums.
+Feel free to join BenchmarkNet's discussion in the [thread](https://forum.unity.com/threads/benchmarknet-stress-test-for-enet-unet-litenetlib-lidgren-and-miniudp.512507 "thread") on Unity forums.
 
-If you have any questions, contact me via [email](mailto:nxrighthere@gmail.com "email").
+If you have any questions, contact the original author via [email](mailto:nxrighthere@gmail.com "email") or Jamie (DarkRift) via [email](mailto:jamie:@darkriftnetworking.com).
 
 Donations
 --------
-This project has already had an impact and helped developers in an improvement of their networking libraries. If you like this project, you can support me on [Bountysource](https://salt.bountysource.com/checkout/amount?team=nxrighthere), [Ko-fi](https://ko-fi.com/nxrighthere "Ko-fi") or [PayPal](https://www.paypal.me/nxrighthere "PayPal").
+This project has already had an impact and helped developers in an improvement of their networking libraries. If you like this project, you can support the original author on [Bountysource](https://salt.bountysource.com/checkout/amount?team=nxrighthere), [Ko-fi](https://ko-fi.com/nxrighthere "Ko-fi") or [PayPal](https://www.paypal.me/nxrighthere "PayPal").
 
-Any support is much appreciated.
+Any support is much appreciated by him.
