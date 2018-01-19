@@ -47,7 +47,7 @@ using Hazel.Udp;
 namespace BenchmarkNet {
 	public class BenchmarkNet {
 		protected const string title = "BenchmarkNet";
-		protected const string version = "1.02";
+		protected const string version = "1.03";
 		protected const string ip = "127.0.0.1";
 		protected static ushort port = 0;
 		protected static ushort maxClients = 0;
@@ -65,6 +65,7 @@ namespace BenchmarkNet {
 		protected static Thread serverThread;
 		protected static volatile int clientsStartedCount = 0;
 		protected static volatile int clientsConnectedCount = 0;
+		protected static volatile int clientsChannelsCount = 0;
 		protected static volatile int clientsDisconnectedCount = 0;
 		protected static volatile int serverReliableSent = 0;
 		protected static volatile int serverReliableReceived = 0;
@@ -94,6 +95,7 @@ namespace BenchmarkNet {
 		};
 
 		private static Func<int, string> Space = (value) => ("".PadRight(value));
+		private static Func<int, decimal, decimal, decimal> PayloadFlow = (clientsChannelsCount, messageLength, sendRate) => (clientsChannelsCount * (messageLength * sendRate * 2) * 8 / (1000 * 1000)) * 2;
 		
 		private static void Main() {
 			Console.Title = title;
@@ -240,6 +242,7 @@ namespace BenchmarkNet {
 
 					Console.WriteLine(Environment.NewLine + "Server status: " + (processOverload ? "Overload" : (processCompleted ? "Completed" : (serverThread.IsAlive ? "Running" + Space(2) : "Failure" + Space(2)))));
 					Console.WriteLine("Clients status: " + clientsStartedCount + " started, " + clientsConnectedCount + " connected, " + clientsDisconnectedCount + " dropped");
+					Console.WriteLine("Server payload flow: " + PayloadFlow(clientsChannelsCount, messageData.Length, sendRate).ToString("0.00") + " mbps (current), " + PayloadFlow(maxClients * 2, messageData.Length, sendRate).ToString("0.00") + " mbps (predicted)");
 					Console.WriteLine("Clients sent -> Reliable: " + clientsReliableSent + " messages (" + clientsReliableBytesSent + " bytes), Unreliable: " + clientsUnreliableSent + " messages (" + clientsUnreliableBytesSent + " bytes)");
 					Console.WriteLine("Server received <- Reliable: " + serverReliableReceived + " messages (" + serverReliableBytesReceived + " bytes), Unreliable: " + serverUnreliableReceived + " messages (" + serverUnreliableBytesReceived + " bytes)");
 					Console.WriteLine("Server sent -> Reliable: " + serverReliableSent + " messages (" + serverReliableBytesSent + " bytes), Unreliable: " + serverUnreliableSent + " messages (" + serverUnreliableBytesSent + " bytes)");
@@ -403,6 +406,9 @@ namespace BenchmarkNet {
 				int unreliableSentCount = 0;
 
 				Task.Factory.StartNew(async() => {
+					bool reliableIncremented = false;
+					bool unreliableIncremented = false;
+
 					while (processActive) {
 						if (reliableToSend > 0) {
 							SendReliable(messageData, 2, peer);
@@ -418,6 +424,22 @@ namespace BenchmarkNet {
 							Interlocked.Increment(ref unreliableSentCount);
 							Interlocked.Increment(ref clientsUnreliableSent);
 							Interlocked.Add(ref clientsUnreliableBytesSent, messageData.Length);
+						}
+
+						if (reliableToSend > 0 && !reliableIncremented) {
+							reliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (reliableToSend == 0 && reliableIncremented) {
+							reliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						if (unreliableToSend > 0 && !unreliableIncremented) {
+							unreliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (unreliableToSend == 0 && unreliableIncremented) {
+							unreliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
 						}
 
 						await Task.Delay(1000 / sendRate);
@@ -534,6 +556,9 @@ namespace BenchmarkNet {
 				int unreliableSentCount = 0;
 
 				Task.Factory.StartNew(async() => {
+					bool reliableIncremented = false;
+					bool unreliableIncremented = false;
+
 					while (processActive) {
 						byte error;
 						
@@ -551,6 +576,22 @@ namespace BenchmarkNet {
 							Interlocked.Increment(ref unreliableSentCount);
 							Interlocked.Increment(ref clientsUnreliableSent);
 							Interlocked.Add(ref clientsUnreliableBytesSent, messageData.Length);
+						}
+
+						if (reliableToSend > 0 && !reliableIncremented) {
+							reliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (reliableToSend == 0 && reliableIncremented) {
+							reliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						if (unreliableToSend > 0 && !unreliableIncremented) {
+							unreliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (unreliableToSend == 0 && unreliableIncremented) {
+							unreliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
 						}
 
 						await Task.Delay(1000 / sendRate);
@@ -662,6 +703,9 @@ namespace BenchmarkNet {
 				int unreliableSentCount = 0;
 
 				Task.Factory.StartNew(async() => {
+					bool reliableIncremented = false;
+					bool unreliableIncremented = false;
+
 					while (processActive) {
 						if (reliableToSend > 0) {
 							SendReliable(messageData, client.GetFirstPeer());
@@ -677,6 +721,22 @@ namespace BenchmarkNet {
 							Interlocked.Increment(ref unreliableSentCount);
 							Interlocked.Increment(ref clientsUnreliableSent);
 							Interlocked.Add(ref clientsUnreliableBytesSent, messageData.Length);
+						}
+
+						if (reliableToSend > 0 && !reliableIncremented) {
+							reliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (reliableToSend == 0 && reliableIncremented) {
+							reliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						if (unreliableToSend > 0 && !unreliableIncremented) {
+							unreliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (unreliableToSend == 0 && unreliableIncremented) {
+							unreliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
 						}
 
 						await Task.Delay(1000 / sendRate);
@@ -783,6 +843,9 @@ namespace BenchmarkNet {
 				int unreliableSentCount = 0;
 
 				Task.Factory.StartNew(async() => {
+					bool reliableIncremented = false;
+					bool unreliableIncremented = false;
+
 					while (processActive) {
 						if (reliableToSend > 0) {
 							SendReliable(messageData, client.ServerConnection, client.CreateMessage(), 2);
@@ -798,6 +861,22 @@ namespace BenchmarkNet {
 							Interlocked.Increment(ref unreliableSentCount);
 							Interlocked.Increment(ref clientsUnreliableSent);
 							Interlocked.Add(ref clientsUnreliableBytesSent, messageData.Length);
+						}
+
+						if (reliableToSend > 0 && !reliableIncremented) {
+							reliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (reliableToSend == 0 && reliableIncremented) {
+							reliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						if (unreliableToSend > 0 && !unreliableIncremented) {
+							unreliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (unreliableToSend == 0 && unreliableIncremented) {
+							unreliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
 						}
 
 						await Task.Delay(1000 / sendRate);
@@ -897,6 +976,9 @@ namespace BenchmarkNet {
 				int unreliableSentCount = 0;
 
 				Task.Factory.StartNew(async() => {
+					bool reliableIncremented = false;
+					bool unreliableIncremented = false;
+
 					while (processActive) {
 						if (reliableToSend > 0) {
 							SendReliable(messageData, connection);
@@ -912,6 +994,22 @@ namespace BenchmarkNet {
 							Interlocked.Increment(ref unreliableSentCount);
 							Interlocked.Increment(ref clientsUnreliableSent);
 							Interlocked.Add(ref clientsUnreliableBytesSent, messageData.Length);
+						}
+
+						if (reliableToSend > 0 && !reliableIncremented) {
+							reliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (reliableToSend == 0 && reliableIncremented) {
+							reliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						if (unreliableToSend > 0 && !unreliableIncremented) {
+							unreliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (unreliableToSend == 0 && unreliableIncremented) {
+							unreliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
 						}
 
 						await Task.Delay(1000 / sendRate);
@@ -995,6 +1093,9 @@ namespace BenchmarkNet {
 				int unreliableSentCount = 0;
 
 				Task.Factory.StartNew(async() => {
+					bool reliableIncremented = false;
+					bool unreliableIncremented = false;
+
 					while (processActive) {
 						if (reliableToSend > 0) {
 							client.SendBytes(messageData, SendOption.Reliable);
@@ -1010,6 +1111,22 @@ namespace BenchmarkNet {
 							Interlocked.Increment(ref unreliableSentCount);
 							Interlocked.Increment(ref clientsUnreliableSent);
 							Interlocked.Add(ref clientsUnreliableBytesSent, messageData.Length);
+						}
+
+						if (reliableToSend > 0 && !reliableIncremented) {
+							reliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (reliableToSend == 0 && reliableIncremented) {
+							reliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						if (unreliableToSend > 0 && !unreliableIncremented) {
+							unreliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (unreliableToSend == 0 && unreliableIncremented) {
+							unreliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
 						}
 
 						await Task.Delay(1000 / sendRate);
