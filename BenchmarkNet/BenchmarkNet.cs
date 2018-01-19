@@ -295,7 +295,7 @@ namespace BenchmarkNet
                                 }
                                 Interlocked.Increment(ref serverReliableSent);
                                 Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
-                                Interlocked.Add(ref serverReliableBytesReceived, reader.ReadBytes().Length);  //TODO use ReadRaw once exposed
+                                Interlocked.Add(ref serverReliableBytesReceived, reader.Length);
                             }
                             else
                             {
@@ -309,7 +309,7 @@ namespace BenchmarkNet
                                 }
                                 Interlocked.Increment(ref serverUnreliableSent);
                                 Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
-                                Interlocked.Add(ref serverUnreliableBytesReceived, reader.ReadBytes().Length);  //TODO use ReadRaw once exposed
+                                Interlocked.Add(ref serverUnreliableBytesReceived, reader.Length);
                             }
                         }
                     };
@@ -346,12 +346,12 @@ namespace BenchmarkNet
                             if (e.SendMode == SendMode.Reliable)
                             {
                                 Interlocked.Increment(ref clientsReliableReceived);
-                                Interlocked.Add(ref clientsReliableBytesReceived, reader.ReadBytes().Length);  //TODO use ReadRaw once exposed
+                                Interlocked.Add(ref clientsReliableBytesReceived, reader.Length);
                             }
                             else
                             {
                                 Interlocked.Increment(ref clientsUnreliableReceived);
-                                Interlocked.Add(ref clientsUnreliableBytesReceived, reader.ReadBytes().Length);  //TODO use ReadRaw once exposed
+                                Interlocked.Add(ref clientsUnreliableBytesReceived, reader.Length);
                             }
                         }
                     };
@@ -367,7 +367,7 @@ namespace BenchmarkNet
                         {
                             using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
                             {
-                                writer.Write(messageData);         //TODO use WriteRaw once exposed
+                                writer.WriteRaw(messageData, 0, messageData.Length);
 
                                 using (Message message = Message.Create(0, writer))
                                     client.SendMessage(message, SendMode.Reliable);
@@ -382,7 +382,7 @@ namespace BenchmarkNet
                         {
                             using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
                             {
-                                writer.Write(messageData);         //TODO use WriteRaw once exposed
+                                writer.WriteRaw(messageData, 0, messageData.Length);
 
                                 using (Message message = Message.Create(0, writer))
                                     client.SendMessage(message, SendMode.Unreliable);
