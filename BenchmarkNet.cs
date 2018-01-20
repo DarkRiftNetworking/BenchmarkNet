@@ -26,6 +26,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,6 +44,8 @@ using MiniUDP;
 // Hazel (https://github.com/DarkRiftNetworking/Hazel-Networking)
 using Hazel;
 using Hazel.Udp;
+// Photon (https://www.photonengine.com/en/OnPremise)
+using ExitGames.Client.Photon;
 
 namespace BenchmarkNet {
 	public class BenchmarkNet {
@@ -57,7 +60,9 @@ namespace BenchmarkNet {
 		protected static int reliableMessages = 0;
 		protected static int unreliableMessages = 0;
 		protected static string message = "";
+		protected static char[] reversedMessage;
 		protected static byte[] messageData;
+		protected static byte[] reversedMessageData;
 		protected static bool processActive = false;
 		protected static bool processCompleted = false;
 		protected static bool processOverload = false;
@@ -91,7 +96,8 @@ namespace BenchmarkNet {
 			"LiteNetLib",
 			"Lidgren",
 			"MiniUDP",
-			"Hazel"
+			"Hazel",
+			"Photon"
 		};
 
 		private static Func<int, string> Space = (value) => ("".PadRight(value));
@@ -177,7 +183,10 @@ namespace BenchmarkNet {
 			if (message == string.Empty)
 				message = defaultMessage;
 
+			reversedMessage = message.ToCharArray();
+			Array.Reverse(reversedMessage);
 			messageData = Encoding.ASCII.GetBytes(message);
+			reversedMessageData = Encoding.ASCII.GetBytes(new string(reversedMessage));
 
 			Console.CursorVisible = false;
 			Console.Clear();
@@ -203,8 +212,10 @@ namespace BenchmarkNet {
 				serverThread = new Thread(LidgrenBenchmark.Server);
 			else if (selectedNetworkingLibrary == 4)
 				serverThread = new Thread(MiniUDPBenchmark.Server);
-			else
+			else if (selectedNetworkingLibrary == 5)
 				serverThread = new Thread(HazelBenchmark.Server);
+			else
+				serverThread = new Thread(PhotonBenchmark.Server);
 
 			serverThread.Start();
 			Thread.Sleep(100);
@@ -328,8 +339,10 @@ namespace BenchmarkNet {
 						clients.Add(LidgrenBenchmark.Client());
 					else if (selectedNetworkingLibrary == 4)
 						clients.Add(MiniUDPBenchmark.Client());
-					else
+					else if (selectedNetworkingLibrary == 5)
 						clients.Add(HazelBenchmark.Client());
+					else
+						clients.Add(PhotonBenchmark.Client());
 					
 					Interlocked.Increment(ref clientsStartedCount);
 					Thread.Sleep(15);
@@ -1175,4 +1188,139 @@ namespace BenchmarkNet {
 			}, TaskCreationOptions.LongRunning);
 		}
 	}
+
+	public class PhotonBenchmark : BenchmarkNet {
+		private class PhotonPeerListener : IPhotonPeerListener {
+			public event Action OnConnected;
+			public event Action OnDisconnected;
+			public event Action<byte[]> OnReliableReceived;
+			public event Action<byte[]> OnUnreliableReceived;
+
+			public void OnMessage(object message) {
+				byte[] data = (byte[])message;
+
+				if (data.SequenceEqual(messageData)) {
+					OnReliableReceived?.Invoke(data);
+					Interlocked.Increment(ref serverReliableReceived);
+					Interlocked.Increment(ref serverReliableSent);
+					Interlocked.Add(ref serverReliableBytesSent, data.Length);
+					Interlocked.Add(ref serverReliableBytesReceived, data.Length);
+				} else if (data.SequenceEqual(reversedMessageData)) {
+					OnUnreliableReceived?.Invoke(data);
+					Interlocked.Increment(ref serverUnreliableReceived);
+					Interlocked.Increment(ref serverUnreliableSent);
+					Interlocked.Add(ref serverUnreliableBytesSent, data.Length);
+					Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
+				}
+			}
+
+			public void OnStatusChanged(StatusCode statusCode) {
+				switch (statusCode) {
+					case StatusCode.Connect:
+						OnConnected.Invoke();
+
+						break;
+
+					case StatusCode.Disconnect:
+						OnDisconnected.Invoke();
+
+						break;
+				}
+			}
+
+			public void OnEvent(EventData netEvent) { }
+
+			public void OnOperationResponse(OperationResponse operationResponse) { }
+
+			public void DebugReturn(DebugLevel level, string message) { }
+		}
+
+		public static void Server() {
+			Thread.Sleep(Timeout.Infinite);
+		}
+
+		public static async Task Client() {
+			await Task.Factory.StartNew(() => {
+				PhotonPeerListener listener = new PhotonPeerListener();
+				PhotonPeer client = new PhotonPeer(listener, ConnectionProtocol.Udp);
+
+				client.Connect(ip + ":" + port, title);
+				
+				int reliableToSend = 0;
+				int unreliableToSend = 0;
+				int reliableSentCount = 0;
+				int unreliableSentCount = 0;
+
+				Task.Factory.StartNew(async() => {
+					bool reliableIncremented = false;
+					bool unreliableIncremented = false;
+
+					while (processActive) {
+						if (reliableToSend > 0) {
+							client.SendMessage(messageData, true, 0, false);
+							Interlocked.Decrement(ref reliableToSend);
+							Interlocked.Increment(ref reliableSentCount);
+							Interlocked.Increment(ref clientsReliableSent);
+							Interlocked.Add(ref clientsReliableBytesSent, messageData.Length);
+						}
+
+						if (unreliableToSend > 0) {
+							client.SendMessage(reversedMessageData, false, 1, false);
+							Interlocked.Decrement(ref unreliableToSend);
+							Interlocked.Increment(ref unreliableSentCount);
+							Interlocked.Increment(ref clientsUnreliableSent);
+							Interlocked.Add(ref clientsUnreliableBytesSent, reversedMessageData.Length);
+						}
+
+						if (reliableToSend > 0 && !reliableIncremented) {
+							reliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (reliableToSend == 0 && reliableIncremented) {
+							reliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						if (unreliableToSend > 0 && !unreliableIncremented) {
+							unreliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (unreliableToSend == 0 && unreliableIncremented) {
+							unreliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						await Task.Delay(1000 / sendRate);
+					}
+				}, TaskCreationOptions.LongRunning);
+
+				listener.OnConnected += () => {
+					Interlocked.Increment(ref clientsConnectedCount);
+					Interlocked.Exchange(ref reliableToSend, reliableMessages);
+					Interlocked.Exchange(ref unreliableToSend, unreliableMessages);
+				};
+
+				listener.OnDisconnected += () => {
+					Interlocked.Increment(ref clientsDisconnectedCount);
+					Interlocked.Exchange(ref reliableToSend, 0);
+					Interlocked.Exchange(ref unreliableToSend, 0);
+				};
+
+				listener.OnReliableReceived += (data) => {
+					Interlocked.Increment(ref clientsReliableReceived);
+					Interlocked.Add(ref clientsReliableBytesReceived, data.Length);
+				};
+
+				listener.OnUnreliableReceived += (data) => {
+					Interlocked.Increment(ref clientsUnreliableReceived);
+					Interlocked.Add(ref clientsUnreliableBytesReceived, data.Length);
+				};	
+
+				while (processActive) {
+					client.Service();
+					Thread.Sleep(1000 / clientTickRate);
+				}
+
+				client.Disconnect();
+			}, TaskCreationOptions.LongRunning);
+		}
+	}	
 }
