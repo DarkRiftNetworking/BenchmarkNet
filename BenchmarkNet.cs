@@ -459,6 +459,8 @@ namespace BenchmarkNet {
 
 						case EventType.Disconnect:
 							Interlocked.Increment(ref clientsDisconnectedCount);
+							Interlocked.Exchange(ref reliableToSend, 0);
+							Interlocked.Exchange(ref unreliableToSend, 0);
 
 							break;
 
@@ -616,6 +618,8 @@ namespace BenchmarkNet {
 
 							case NetworkEventType.DisconnectEvent:
 								Interlocked.Increment(ref clientsDisconnectedCount);
+								Interlocked.Exchange(ref reliableToSend, 0);
+								Interlocked.Exchange(ref unreliableToSend, 0);
 
 								break;
 
@@ -751,6 +755,8 @@ namespace BenchmarkNet {
 
 				listener.PeerDisconnectedEvent += (peer, info) => {
 					Interlocked.Increment(ref clientsDisconnectedCount);
+					Interlocked.Exchange(ref reliableToSend, 0);
+					Interlocked.Exchange(ref unreliableToSend, 0);
 				};
 
 				listener.NetworkReceiveEvent += (peer, reader, deliveryMethod) => {
@@ -897,6 +903,8 @@ namespace BenchmarkNet {
 									Interlocked.Exchange(ref unreliableToSend, unreliableMessages);
 								} else if (status == NetConnectionStatus.Disconnected) {
 									Interlocked.Increment(ref clientsDisconnectedCount);
+									Interlocked.Exchange(ref reliableToSend, 0);
+									Interlocked.Exchange(ref unreliableToSend, 0);
 								}
 
 								break;
@@ -1024,6 +1032,8 @@ namespace BenchmarkNet {
 
 				client.PeerClosed += (peer, reason, kickReason, error) => {
 					Interlocked.Increment(ref clientsDisconnectedCount);
+					Interlocked.Exchange(ref reliableToSend, 0);
+					Interlocked.Exchange(ref unreliableToSend, 0);
 				};
 
 				client.PeerNotification += (peer, data, dataLength) => {
@@ -1141,6 +1151,8 @@ namespace BenchmarkNet {
 
 				client.Disconnected += (sender, data) => {
 					Interlocked.Increment(ref clientsDisconnectedCount);
+					Interlocked.Exchange(ref reliableToSend, 0);
+					Interlocked.Exchange(ref unreliableToSend, 0);
 				};
 
 				client.DataReceived += (sender, data) => {
