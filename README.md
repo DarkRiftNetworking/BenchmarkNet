@@ -13,6 +13,7 @@ Supported networking libraries:
 - [Lidgren](https://github.com/lidgren/lidgren-network-gen3 "Lidgren")
 - [MiniUDP](https://github.com/ashoulson/MiniUDP "MiniUDP")
 - [Hazel](https://github.com/DarkRiftNetworking/Hazel-Networking "Hazel")
+- [Photon](https://www.photonengine.com/en/OnPremise "Photon")
 
 Features:
 - Asynchronous simulation of a large number of clients
