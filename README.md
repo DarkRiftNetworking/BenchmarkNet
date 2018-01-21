@@ -6,7 +6,7 @@
 
 BenchmarkNet is a console application for testing the reliable UDP networking solutions.
 
-Supported networking libraries:
+Supported networking solutions:
 - [ENet](https://github.com/lsalzman/enet "ENet") ([C# Wrapper](https://github.com/NateShoffner/ENetSharp "C# Wrapper"))
 - [UNet](https://docs.unity3d.com/Manual/UNetUsingTransport.html "UNet")
 - [LiteNetLib](https://github.com/RevenantX/LiteNetLib "LiteNetLib")
