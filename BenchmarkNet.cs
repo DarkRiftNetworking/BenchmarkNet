@@ -66,6 +66,7 @@ namespace BenchmarkNet {
 		protected static bool processActive = false;
 		protected static bool processCompleted = false;
 		protected static bool processOverload = false;
+		protected static bool processFailure = false;
 		protected static bool maxClientsPass = true;
 		protected static Thread serverThread;
 		protected static volatile int clientsStartedCount = 0;
@@ -251,7 +252,7 @@ namespace BenchmarkNet {
 						Console.ResetColor();
 					}
 
-					Console.WriteLine(Environment.NewLine + "Server status: " + (processOverload ? "Overload" : (processCompleted ? "Completed" : (serverThread.IsAlive ? "Running" + Space(2) : "Failure" + Space(2)))));
+					Console.WriteLine(Environment.NewLine + "Server status: " + (processFailure || !serverThread.IsAlive ? "Failure" + Space(2) : (processOverload ? "Overload" : (processCompleted ? "Completed" : "Running" + Space(2)))));
 					Console.WriteLine("Clients status: " + clientsStartedCount + " started, " + clientsConnectedCount + " connected, " + clientsDisconnectedCount + " dropped");
 					Console.WriteLine("Server payload flow: " + PayloadFlow(clientsChannelsCount, messageData.Length, sendRate).ToString("0.00") + " mbps (current), " + PayloadFlow(maxClients * 2, messageData.Length, sendRate).ToString("0.00") + " mbps (predicted)" + Space(10));
 					Console.WriteLine("Clients sent -> Reliable: " + clientsReliableSent + " messages (" + clientsReliableBytesSent + " bytes), Unreliable: " + clientsUnreliableSent + " messages (" + clientsUnreliableBytesSent + " bytes)");
@@ -1236,7 +1237,20 @@ namespace BenchmarkNet {
 		}
 
 		public static void Server() {
-			Thread.Sleep(Timeout.Infinite);
+			PhotonPeerListener listener = new PhotonPeerListener();
+			PhotonPeer server = new PhotonPeer(listener, ConnectionProtocol.Udp);
+
+			server.Connect(ip + ":" + port, title);
+
+			listener.OnConnected += () => {
+				Thread.Sleep(Timeout.Infinite);
+			};
+
+			listener.OnDisconnected += () => {
+				processFailure = true;
+			};
+
+			server.Disconnect();
 		}
 
 		public static async Task Client() {
