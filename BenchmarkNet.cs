@@ -1250,6 +1250,11 @@ namespace BenchmarkNet {
 				processFailure = true;
 			};
 
+			while (processActive) {
+				server.Service();
+				Thread.Sleep(1000 / serverTickRate);
+			}
+
 			server.Disconnect();
 		}
 
