@@ -1197,7 +1197,7 @@ namespace BenchmarkNet {
 			public event Action<byte[]> OnReliableReceived;
 			public event Action<byte[]> OnUnreliableReceived;
 
-			public void OnMessage(object message) {
+			public void OnMessage(object message) { // Photon API doesn't have a native parameter on the client-side to determine the channel number
 				byte[] data = (byte[])message;
 
 				if (data.SequenceEqual(messageData)) {
