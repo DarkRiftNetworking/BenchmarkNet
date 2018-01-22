@@ -88,7 +88,7 @@ namespace BenchmarkNet {
 		protected static volatile int clientsUnreliableBytesSent = 0;
 		protected static volatile int clientsUnreliableBytesReceived = 0;
 		private static ushort maxPeers = 0;
-		private static byte selectedNetworkingLibrary = 0;
+		private static byte selectedLibrary = 0;
 		private static readonly string[] networkingLibraries = {
 			"ENet",
 			"UNet",
@@ -116,7 +116,7 @@ namespace BenchmarkNet {
 			}
 
 			Console.Write(Environment.NewLine + "Enter the number (default 0): ");
-			Byte.TryParse(Console.ReadLine(), out selectedNetworkingLibrary);
+			Byte.TryParse(Console.ReadLine(), out selectedLibrary);
 
 			ushort defaultPort = 9500;
 
@@ -194,26 +194,26 @@ namespace BenchmarkNet {
 			
 			GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
 
-			if (selectedNetworkingLibrary == 0)
+			if (selectedLibrary == 0)
 				Library.Initialize();
 
 			maxPeers = ushort.MaxValue;
-			maxClientsPass = (selectedNetworkingLibrary > 0 ? maxClients <= maxPeers : maxClients <= ENet.Native.ENET_PROTOCOL_MAXIMUM_PEER_ID);
+			maxClientsPass = (selectedLibrary > 0 ? maxClients <= maxPeers : maxClients <= ENet.Native.ENET_PROTOCOL_MAXIMUM_PEER_ID);
 
 			if (!maxClientsPass)
-				maxClients = Math.Min(Math.Max((ushort)1, (ushort)maxClients), (selectedNetworkingLibrary > 0 ? maxPeers : (ushort)Native.ENET_PROTOCOL_MAXIMUM_PEER_ID));
+				maxClients = Math.Min(Math.Max((ushort)1, (ushort)maxClients), (selectedLibrary > 0 ? maxPeers : (ushort)Native.ENET_PROTOCOL_MAXIMUM_PEER_ID));
 
-			if (selectedNetworkingLibrary == 0)
+			if (selectedLibrary == 0)
 				serverThread = new Thread(ENetBenchmark.Server);
-			else if (selectedNetworkingLibrary == 1)
+			else if (selectedLibrary == 1)
 				serverThread = new Thread(UNetBenchmark.Server);
-			else if (selectedNetworkingLibrary == 2)
+			else if (selectedLibrary == 2)
 				serverThread = new Thread(LiteNetLibBenchmark.Server);
-			else if (selectedNetworkingLibrary == 3)
+			else if (selectedLibrary == 3)
 				serverThread = new Thread(LidgrenBenchmark.Server);
-			else if (selectedNetworkingLibrary == 4)
+			else if (selectedLibrary == 4)
 				serverThread = new Thread(MiniUDPBenchmark.Server);
-			else if (selectedNetworkingLibrary == 5)
+			else if (selectedLibrary == 5)
 				serverThread = new Thread(HazelBenchmark.Server);
 			else
 				serverThread = new Thread(PhotonBenchmark.Server);
@@ -235,20 +235,20 @@ namespace BenchmarkNet {
 				int spinnerTimer = 0;
 				int spinnerSequence = 0;
 				string spinner = "";
-				Stopwatch stopwatch = new Stopwatch();
+				Stopwatch elapsedTime = new Stopwatch();
 
-				stopwatch.Start();
+				elapsedTime.Start();
 
 				while (processActive) {
 					Console.CursorVisible = false;
 					Console.SetCursorPosition(0, 0);
-					Console.WriteLine("Benchmarking " + networkingLibraries[selectedNetworkingLibrary] + "...");
+					Console.WriteLine("Benchmarking " + networkingLibraries[selectedLibrary] + "...");
 					Console.WriteLine("Server tick rate: " + serverTickRate + ", Client tick rate: " + clientTickRate + " (ticks per second)");
 					Console.WriteLine(maxClients + " clients, " + reliableMessages + " reliable and " + unreliableMessages + " unreliable messages per client, " + messageData.Length + " bytes per message, " + sendRate + " messages per second");
 					
 					if (!maxClientsPass) {
 						Console.ForegroundColor = ConsoleColor.Red;
-						Console.WriteLine("This networking library doesn't support more than " + (selectedNetworkingLibrary > 0 ? maxPeers : Native.ENET_PROTOCOL_MAXIMUM_PEER_ID) + " peers per server!");
+						Console.WriteLine("This networking library doesn't support more than " + (selectedLibrary > 0 ? maxPeers : Native.ENET_PROTOCOL_MAXIMUM_PEER_ID) + " peers per server!");
 						Console.ResetColor();
 					}
 
@@ -261,7 +261,7 @@ namespace BenchmarkNet {
 					Console.WriteLine("Clients received <- Reliable: " + clientsReliableReceived + " messages (" + clientsReliableBytesReceived + " bytes), Unreliable: " + clientsUnreliableReceived + " messages (" + clientsUnreliableBytesReceived + " bytes)");
 					Console.WriteLine("Total - Reliable: " + ((ulong)clientsReliableSent + (ulong)serverReliableReceived + (ulong)serverReliableSent + (ulong)clientsReliableReceived) + " messages (" + ((ulong)clientsReliableBytesSent + (ulong)serverReliableBytesReceived + (ulong)serverReliableBytesSent + (ulong)clientsReliableBytesReceived) + " bytes), Unreliable: " + ((ulong)clientsUnreliableSent + (ulong)serverUnreliableReceived + (ulong)serverUnreliableSent + (ulong)clientsUnreliableReceived) + " messages (" + ((ulong)clientsUnreliableBytesSent + (ulong)serverUnreliableBytesReceived + (ulong)serverUnreliableBytesSent + (ulong)clientsUnreliableBytesReceived) + " bytes)");
 					Console.WriteLine("Expected - Reliable: " + (maxClients * (ulong)reliableMessages * 4) + " messages (" + (maxClients * (ulong)reliableMessages * (ulong)messageData.Length * 4) + " bytes), Unreliable: " + (maxClients * (ulong)unreliableMessages * 4) + " messages (" + (maxClients * (ulong)unreliableMessages * (ulong)messageData.Length * 4) + " bytes)");
-					Console.WriteLine("Elapsed time: " + stopwatch.Elapsed.Hours.ToString("00") + ":" + stopwatch.Elapsed.Minutes.ToString("00") + ":" + stopwatch.Elapsed.Seconds.ToString("00"));
+					Console.WriteLine("Elapsed time: " + elapsedTime.Elapsed.Hours.ToString("00") + ":" + elapsedTime.Elapsed.Minutes.ToString("00") + ":" + elapsedTime.Elapsed.Seconds.ToString("00"));
 
 					if (spinnerTimer >= 10) {
 						spinnerSequence++;
@@ -290,7 +290,7 @@ namespace BenchmarkNet {
 					Console.WriteLine("Process completed! Press any key to exit...");
 				}
 				
-				stopwatch.Stop();
+				elapsedTime.Stop();
 			}, TaskCreationOptions.LongRunning);
 		}
 
@@ -317,7 +317,7 @@ namespace BenchmarkNet {
 					lastData = currentData;
 				}
 
-				if (selectedNetworkingLibrary == 0)
+				if (selectedLibrary == 0)
 					Library.Deinitialize();
 			}, TaskCreationOptions.LongRunning);
 		}
@@ -1341,5 +1341,5 @@ namespace BenchmarkNet {
 				client.Disconnect();
 			}, TaskCreationOptions.LongRunning);
 		}
-	}	
+	}
 }
