@@ -23,7 +23,6 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -323,26 +322,26 @@ namespace BenchmarkNet {
 
 		private static async Task Spawn() {
 			await Task.Factory.StartNew(() => {
-				List<Task> clients = new List<Task>();
+				Task[] clients = new Task[maxClients];
 
 				for (int i = 0; i < maxClients; i++) {
 					if (!processActive)
 						break;
 
-					if (selectedNetworkingLibrary == 0)
-						clients.Add(ENetBenchmark.Client());
-					else if (selectedNetworkingLibrary == 1)
-						clients.Add(UNetBenchmark.Client());
-					else if (selectedNetworkingLibrary == 2)
-						clients.Add(LiteNetLibBenchmark.Client());
-					else if (selectedNetworkingLibrary == 3)
-						clients.Add(LidgrenBenchmark.Client());
-					else if (selectedNetworkingLibrary == 4)
-						clients.Add(MiniUDPBenchmark.Client());
-					else if (selectedNetworkingLibrary == 5)
-						clients.Add(HazelBenchmark.Client());
+					if (selectedLibrary == 0)
+						clients[i] = ENetBenchmark.Client();
+					else if (selectedLibrary == 1)
+						clients[i] = UNetBenchmark.Client();
+					else if (selectedLibrary == 2)
+						clients[i] = LiteNetLibBenchmark.Client();
+					else if (selectedLibrary == 3)
+						clients[i] = LidgrenBenchmark.Client();
+					else if (selectedLibrary == 4)
+						clients[i] = MiniUDPBenchmark.Client();
+					else if (selectedLibrary == 5)
+						clients[i] = HazelBenchmark.Client();
 					else
-						clients.Add(PhotonBenchmark.Client());
+						clients[i] = PhotonBenchmark.Client();
 					
 					Interlocked.Increment(ref clientsStartedCount);
 					Thread.Sleep(15);
