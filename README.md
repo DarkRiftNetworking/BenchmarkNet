@@ -6,6 +6,12 @@
 
 BenchmarkNet is a console application for testing the reliable UDP networking solutions.
 
+Features:
+- Asynchronous simulation of a large number of clients
+- Stable under high loads
+- Simple and flexible simulation setup
+- Detailed session information
+
 Supported networking solutions:
 - [ENet](https://github.com/lsalzman/enet "ENet") ([C# Wrapper](https://github.com/NateShoffner/ENetSharp "C# Wrapper"))
 - [UNet](https://docs.unity3d.com/Manual/UNetUsingTransport.html "UNet")
@@ -14,12 +20,6 @@ Supported networking solutions:
 - [MiniUDP](https://github.com/ashoulson/MiniUDP "MiniUDP")
 - [Hazel](https://github.com/DarkRiftNetworking/Hazel-Networking "Hazel")
 - [Photon](https://www.photonengine.com/en/OnPremise "Photon")
-
-Features:
-- Asynchronous simulation of a large number of clients
-- Stable under high loads
-- Simple and flexible simulation setup
-- Detailed session information
 
 You can find the latest benchmark results on the [wiki page](https://github.com/nxrighthere/BenchmarkNet/wiki/Benchmark-Results).
 
