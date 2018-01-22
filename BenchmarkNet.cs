@@ -26,7 +26,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1197,16 +1196,16 @@ namespace BenchmarkNet {
 			public event Action<byte[]> OnReliableReceived;
 			public event Action<byte[]> OnUnreliableReceived;
 
-			public void OnMessage(object message) { // Photon API doesn't have a native parameter on the client-side to determine the channel number
+			public void OnMessage(object message) { // Photon API doesn't have a native parameter on the client-side to determine the channel id
 				byte[] data = (byte[])message;
 
-				if (data.SequenceEqual(messageData)) {
+				if (data[0] == messageData[0]) {
 					OnReliableReceived?.Invoke(data);
 					Interlocked.Increment(ref serverReliableReceived);
 					Interlocked.Increment(ref serverReliableSent);
 					Interlocked.Add(ref serverReliableBytesSent, data.Length);
 					Interlocked.Add(ref serverReliableBytesReceived, data.Length);
-				} else if (data.SequenceEqual(reversedMessageData)) {
+				} else if (data[0] == reversedMessageData[0]) {
 					OnUnreliableReceived?.Invoke(data);
 					Interlocked.Increment(ref serverUnreliableReceived);
 					Interlocked.Increment(ref serverUnreliableSent);
