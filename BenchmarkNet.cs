@@ -458,7 +458,7 @@ namespace BenchmarkNet {
 
 						await Task.Delay(1000 / sendRate);
 					}
-				}, TaskCreationOptions.LongRunning);
+				}, TaskCreationOptions.AttachedToParent);
 
 				while (processActive) {
 					client.Service(1000 / clientTickRate, out netEvent);
@@ -612,7 +612,7 @@ namespace BenchmarkNet {
 
 						await Task.Delay(1000 / sendRate);
 					}
-				}, TaskCreationOptions.LongRunning);
+				}, TaskCreationOptions.AttachedToParent);
 
 				int hostID, connectionID, channelID, dataLength;
 				byte[] buffer = new byte[1024];
@@ -759,7 +759,7 @@ namespace BenchmarkNet {
 
 						await Task.Delay(1000 / sendRate);
 					}
-				}, TaskCreationOptions.LongRunning);
+				}, TaskCreationOptions.AttachedToParent);
 
 				listener.PeerConnectedEvent += (peer) => {
 					Interlocked.Increment(ref clientsConnectedCount);
@@ -901,7 +901,7 @@ namespace BenchmarkNet {
 
 						await Task.Delay(1000 / sendRate);
 					}
-				}, TaskCreationOptions.LongRunning);
+				}, TaskCreationOptions.AttachedToParent);
 
 				NetIncomingMessage netMessage;
 
@@ -1036,7 +1036,7 @@ namespace BenchmarkNet {
 
 						await Task.Delay(1000 / sendRate);
 					}
-				}, TaskCreationOptions.LongRunning);
+				}, TaskCreationOptions.AttachedToParent);
 
 				client.PeerConnected += (peer, token) => {
 					Interlocked.Increment(ref clientsConnectedCount);
@@ -1155,7 +1155,7 @@ namespace BenchmarkNet {
 
 						await Task.Delay(1000 / sendRate);
 					}
-				}, TaskCreationOptions.LongRunning);
+				}, TaskCreationOptions.AttachedToParent);
 
 				if (client.State == Hazel.ConnectionState.Connected) {
 					Interlocked.Increment(ref clientsConnectedCount);
@@ -1309,7 +1309,7 @@ namespace BenchmarkNet {
 
 						await Task.Delay(1000 / sendRate);
 					}
-				}, TaskCreationOptions.LongRunning);
+				}, TaskCreationOptions.AttachedToParent);
 
 				listener.OnConnected += () => {
 					Interlocked.Increment(ref clientsConnectedCount);
