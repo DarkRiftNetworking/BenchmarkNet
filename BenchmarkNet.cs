@@ -24,7 +24,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -191,8 +190,6 @@ namespace BenchmarkNet {
 			Console.Clear();
 			
 			processActive = true;
-			
-			GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
 
 			if (selectedLibrary == 0)
 				Library.Initialize();
