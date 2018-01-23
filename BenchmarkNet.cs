@@ -1154,12 +1154,6 @@ namespace BenchmarkNet {
 					}
 				}, TaskCreationOptions.AttachedToParent);
 
-				if (client.State == Hazel.ConnectionState.Connected) {
-					Interlocked.Increment(ref clientsConnectedCount);
-					Interlocked.Exchange(ref reliableToSend, reliableMessages);
-					Interlocked.Exchange(ref unreliableToSend, unreliableMessages);
-				}
-
 				client.Disconnected += (sender, data) => {
 					Interlocked.Increment(ref clientsDisconnectedCount);
 					Interlocked.Exchange(ref reliableToSend, 0);
@@ -1178,7 +1172,16 @@ namespace BenchmarkNet {
 					data.Recycle();
 				};
 
+				bool connected = false;
+
 				while (processActive) {
+					if (!connected && client.State == Hazel.ConnectionState.Connected) {
+						connected = true;
+						Interlocked.Increment(ref clientsConnectedCount);
+						Interlocked.Exchange(ref reliableToSend, reliableMessages);
+						Interlocked.Exchange(ref unreliableToSend, unreliableMessages);
+					}
+
 					Thread.Sleep(1000 / clientTickRate);
 				}
 
