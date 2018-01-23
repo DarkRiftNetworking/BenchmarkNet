@@ -109,7 +109,7 @@ namespace BenchmarkNet {
 			for (int i = 0; i < arguments.Length; i++) {
 				string argument = arguments[i];
 
-				if (argument == "lowlatency")
+				if (argument == "-lowlatency")
 					lowLatencyMode = true;
 			}
 
