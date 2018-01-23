@@ -59,7 +59,7 @@ namespace BenchmarkNet {
 		protected static string message = "";
 		protected static char[] reversedMessage;
 		protected static byte[] messageData;
-		protected static byte[] reversedMessageData;
+		protected static byte[] reversedData;
 		protected static bool processActive = false;
 		protected static bool processCompleted = false;
 		protected static bool processOverload = false;
@@ -184,7 +184,7 @@ namespace BenchmarkNet {
 			reversedMessage = message.ToCharArray();
 			Array.Reverse(reversedMessage);
 			messageData = Encoding.ASCII.GetBytes(message);
-			reversedMessageData = Encoding.ASCII.GetBytes(new string(reversedMessage));
+			reversedData = Encoding.ASCII.GetBytes(new string(reversedMessage));
 
 			Console.CursorVisible = false;
 			Console.Clear();
@@ -377,16 +377,16 @@ namespace BenchmarkNet {
 
 							if (netEvent.ChannelID == 2) {
 								Interlocked.Increment(ref serverReliableReceived);
+								Interlocked.Add(ref serverReliableBytesReceived, data.Length);
 								SendReliable(messageData, 0, netEvent.Peer);
 								Interlocked.Increment(ref serverReliableSent);
 								Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
-								Interlocked.Add(ref serverReliableBytesReceived, data.Length);
 							} else if (netEvent.ChannelID == 3) {
 								Interlocked.Increment(ref serverUnreliableReceived);
+								Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
 								SendUnreliable(messageData, 1, netEvent.Peer);
 								Interlocked.Increment(ref serverUnreliableSent);
 								Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
-								Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
 							}
 
 							netEvent.Packet.Dispose();
@@ -529,16 +529,16 @@ namespace BenchmarkNet {
 							case NetworkEventType.DataEvent:
 								if (channelID == 0) {
 									Interlocked.Increment(ref serverReliableReceived);
+									Interlocked.Add(ref serverReliableBytesReceived, dataLength);
 									server.Send(hostID, connectionID, reliableChannel, messageData, messageData.Length, out error); 
 									Interlocked.Increment(ref serverReliableSent);
 									Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
-									Interlocked.Add(ref serverReliableBytesReceived, dataLength);
 								} else if (channelID == 1) {
 									Interlocked.Increment(ref serverUnreliableReceived);
+									Interlocked.Add(ref serverUnreliableBytesReceived, dataLength);
 									server.Send(hostID, connectionID, unreliableChannel, messageData, messageData.Length, out error); 
 									Interlocked.Increment(ref serverUnreliableSent);
 									Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
-									Interlocked.Add(ref serverUnreliableBytesReceived, dataLength);
 								}
 
 								break;
@@ -682,16 +682,16 @@ namespace BenchmarkNet {
 
 				if (deliveryMethod == DeliveryMethod.ReliableOrdered) {
 					Interlocked.Increment(ref serverReliableReceived);
+					Interlocked.Add(ref serverReliableBytesReceived, data.Length);
 					SendReliable(messageData, peer);
 					Interlocked.Increment(ref serverReliableSent);
 					Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
-					Interlocked.Add(ref serverReliableBytesReceived, data.Length);
 				} else if (deliveryMethod == DeliveryMethod.Sequenced) {
 					Interlocked.Increment(ref serverUnreliableReceived);
+					Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
 					SendUnreliable(messageData, peer);
 					Interlocked.Increment(ref serverUnreliableSent);
 					Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
-					Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
 				}
 			};
 
@@ -822,16 +822,16 @@ namespace BenchmarkNet {
 
 							if (netMessage.SequenceChannel == 2) {
 								Interlocked.Increment(ref serverReliableReceived);
+								Interlocked.Add(ref serverReliableBytesReceived, data.Length);
 								SendReliable(messageData, netMessage.SenderConnection, server.CreateMessage(), 0);
 								Interlocked.Increment(ref serverReliableSent);
 								Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
-								Interlocked.Add(ref serverReliableBytesReceived, data.Length);
 							} else if (netMessage.SequenceChannel == 3) {
 								Interlocked.Increment(ref serverUnreliableReceived);
+								Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
 								SendUnreliable(messageData, netMessage.SenderConnection, server.CreateMessage(), 1);
 								Interlocked.Increment(ref serverUnreliableSent);
 								Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
-								Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
 							}
 
 							break;
@@ -961,18 +961,18 @@ namespace BenchmarkNet {
 			
 			server.PeerNotification += (peer, data, dataLength) => {
 				Interlocked.Increment(ref serverReliableReceived);
+				Interlocked.Add(ref serverReliableBytesReceived, dataLength);
 				SendReliable(messageData, peer);
 				Interlocked.Increment(ref serverReliableSent);
 				Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
-				Interlocked.Add(ref serverReliableBytesReceived, dataLength);
 			};
 
 			server.PeerPayload += (peer, data, dataLength) => {
 				Interlocked.Increment(ref serverUnreliableReceived);
+				Interlocked.Add(ref serverUnreliableBytesReceived, dataLength);
 				SendUnreliable(messageData, peer);
 				Interlocked.Increment(ref serverUnreliableSent);
 				Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
-				Interlocked.Add(ref serverUnreliableBytesReceived, dataLength);
 			};
 
 			while (processActive) {
@@ -1077,16 +1077,16 @@ namespace BenchmarkNet {
 				netEvent.Connection.DataReceived += (sender, data) => {
 					if (data.SendOption == SendOption.Reliable) {
 						Interlocked.Increment(ref serverReliableReceived);
+						Interlocked.Add(ref serverReliableBytesReceived, data.Bytes.Length);
 						((Connection)sender).SendBytes(messageData, SendOption.Reliable);
 						Interlocked.Increment(ref serverReliableSent);
 						Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
-						Interlocked.Add(ref serverReliableBytesReceived, data.Bytes.Length);
 					} else if (data.SendOption == SendOption.None) {
 						Interlocked.Increment(ref serverUnreliableReceived);
+						Interlocked.Add(ref serverUnreliableBytesReceived, data.Bytes.Length);
 						((Connection)sender).SendBytes(messageData, SendOption.None);
 						Interlocked.Increment(ref serverUnreliableSent);
 						Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
-						Interlocked.Add(ref serverUnreliableBytesReceived, data.Bytes.Length);
 					}
 
 					data.Recycle();
@@ -1197,21 +1197,21 @@ namespace BenchmarkNet {
 			public event Action<byte[]> OnReliableReceived;
 			public event Action<byte[]> OnUnreliableReceived;
 
-			public void OnMessage(object message) { // Photon API doesn't have a native parameter on the client-side to determine the channel id
+			public void OnMessage(object message) {
 				byte[] data = (byte[])message;
 
 				if (data[0] == messageData[0]) {
 					OnReliableReceived?.Invoke(data);
 					Interlocked.Increment(ref serverReliableReceived);
+					Interlocked.Add(ref serverReliableBytesReceived, data.Length);
 					Interlocked.Increment(ref serverReliableSent);
 					Interlocked.Add(ref serverReliableBytesSent, data.Length);
-					Interlocked.Add(ref serverReliableBytesReceived, data.Length);
-				} else if (data[0] == reversedMessageData[0]) {
+				} else if (data[0] == reversedData[0]) {
 					OnUnreliableReceived?.Invoke(data);
 					Interlocked.Increment(ref serverUnreliableReceived);
+					Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
 					Interlocked.Increment(ref serverUnreliableSent);
 					Interlocked.Add(ref serverUnreliableBytesSent, data.Length);
-					Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
 				}
 			}
 
@@ -1284,11 +1284,11 @@ namespace BenchmarkNet {
 						}
 
 						if (unreliableToSend > 0) {
-							client.SendMessage(reversedMessageData, false, 1, false);
+							client.SendMessage(reversedData, false, 1, false);
 							Interlocked.Decrement(ref unreliableToSend);
 							Interlocked.Increment(ref unreliableSentCount);
 							Interlocked.Increment(ref clientsUnreliableSent);
-							Interlocked.Add(ref clientsUnreliableBytesSent, reversedMessageData.Length);
+							Interlocked.Add(ref clientsUnreliableBytesSent, reversedData.Length);
 						}
 
 						if (reliableToSend > 0 && !reliableIncremented) {
