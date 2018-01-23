@@ -1075,16 +1075,24 @@ namespace BenchmarkNet {
 
 			server.NewConnection += (peer, netEvent) => {
 				netEvent.Connection.DataReceived += (sender, data) => {
+					Connection client = (Connection)sender;
+
 					if (data.SendOption == SendOption.Reliable) {
 						Interlocked.Increment(ref serverReliableReceived);
 						Interlocked.Add(ref serverReliableBytesReceived, data.Bytes.Length);
-						((Connection)sender).SendBytes(messageData, SendOption.Reliable);
+						
+						if (client.State == Hazel.ConnectionState.Connected)
+							client.SendBytes(messageData, SendOption.Reliable);
+						
 						Interlocked.Increment(ref serverReliableSent);
 						Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
 					} else if (data.SendOption == SendOption.None) {
 						Interlocked.Increment(ref serverUnreliableReceived);
 						Interlocked.Add(ref serverUnreliableBytesReceived, data.Bytes.Length);
-						((Connection)sender).SendBytes(messageData, SendOption.None);
+
+						if (client.State == Hazel.ConnectionState.Connected)
+							client.SendBytes(messageData, SendOption.None);
+						
 						Interlocked.Increment(ref serverUnreliableSent);
 						Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
 					}
