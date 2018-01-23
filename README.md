@@ -43,6 +43,6 @@ If you have any questions, contact me via [email](mailto:nxrighthere@gmail.com "
 
 Donations
 --------
-This project has already had an impact and helped developers in an improvement of their networking libraries. If you like this project, you can support me on [Bountysource](https://salt.bountysource.com/checkout/amount?team=nxrighthere) or [Yandex](https://money.yandex.ru/quickpay/shop-widget?writer=seller&targets=nxrighthere&targets-hint=&default-sum=100&button-text=14&payment-type-choice=on&mobile-payment-type-choice=on&hint=&successURL=&quickpay=shop&account=41001289261209 "Yandex").
+This project has already had an impact and helped developers in an improvement of their networking libraries. If you like this project, you can support me on [Bountysource](https://salt.bountysource.com/checkout/amount?team=nxrighthere).
 
 Any support is much appreciated.
