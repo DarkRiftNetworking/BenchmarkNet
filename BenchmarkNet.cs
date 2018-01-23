@@ -24,6 +24,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,7 +48,7 @@ using ExitGames.Client.Photon;
 namespace BenchmarkNet {
 	public class BenchmarkNet {
 		protected const string title = "BenchmarkNet";
-		protected const string version = "1.03";
+		protected const string version = "1.04";
 		protected const string ip = "127.0.0.1";
 		protected static ushort port = 0;
 		protected static ushort maxClients = 0;
@@ -64,6 +65,7 @@ namespace BenchmarkNet {
 		protected static bool processCompleted = false;
 		protected static bool processOverload = false;
 		protected static bool processFailure = false;
+		protected static bool lowLatencyMode = false;
 		protected static bool maxClientsPass = true;
 		protected static Thread serverThread;
 		protected static volatile int clientsStartedCount = 0;
@@ -101,13 +103,28 @@ namespace BenchmarkNet {
 		private static Func<int, string> Space = (value) => ("".PadRight(value));
 		private static Func<int, decimal, decimal, decimal> PayloadFlow = (clientsChannelsCount, messageLength, sendRate) => (clientsChannelsCount * (messageLength * sendRate * 2) * 8 / (1000 * 1000)) * 2;
 		
-		private static void Main() {
+		private static void Main(string[] arguments) {
 			Console.Title = title;
+
+			for (int i = 0; i < arguments.Length; i++) {
+				string argument = arguments[i];
+
+				if (argument == "lowlatency")
+					lowLatencyMode = true;
+			}
+
 			Console.SetIn(new StreamReader(Console.OpenStandardInput(8192), Console.InputEncoding, false, bufferSize: 1024));
 			Console.WriteLine("Welcome to " + title + "!");
 			Console.WriteLine("Version " + version);
 			Console.WriteLine(Environment.NewLine + "Source code is available on GitHub (https://github.com/nxrighthere/BenchmarkNet)");
 			Console.WriteLine("If you have any questions, contact me (nxrighthere@gmail.com)");
+			
+			if (lowLatencyMode) {
+				Console.ForegroundColor = ConsoleColor.Yellow;
+				Console.WriteLine(Environment.NewLine + "The process will perform in Sustained Low Latency mode.");
+				Console.ResetColor();
+			}
+			
 			Console.WriteLine(Environment.NewLine + "Select a networking library");
 
 			for (int i = 0; i < networkingLibraries.Length; i++) {
@@ -191,6 +208,9 @@ namespace BenchmarkNet {
 			
 			processActive = true;
 
+			if (lowLatencyMode)
+				GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+
 			if (selectedLibrary == 0)
 				Library.Initialize();
 
@@ -246,6 +266,12 @@ namespace BenchmarkNet {
 					if (!maxClientsPass) {
 						Console.ForegroundColor = ConsoleColor.Red;
 						Console.WriteLine("This networking library doesn't support more than " + (selectedLibrary > 0 ? maxPeers : Native.ENET_PROTOCOL_MAXIMUM_PEER_ID) + " peers per server!");
+						Console.ResetColor();
+					}
+
+					if (lowLatencyMode) {
+						Console.ForegroundColor = ConsoleColor.Yellow;
+						Console.WriteLine(Environment.NewLine + "The process is performing in Sustained Low Latency mode.");
 						Console.ResetColor();
 					}
 
