@@ -4,7 +4,7 @@
 
 [![GitHub release](https://img.shields.io/github/release/nxrighthere/BenchmarkNet.svg)](https://github.com/nxrighthere/BenchmarkNet/releases) [![Bountysource](https://img.shields.io/badge/bountysource-donate-green.svg)](https://salt.bountysource.com/checkout/amount?team=nxrighthere)
 
-BenchmarkNet is a console application for testing the reliable UDP networking libraries.
+BenchmarkNet is a console application for testing the reliable UDP networking solutions.
 
 Features:
 - Asynchronous simulation of a large number of clients
@@ -12,7 +12,7 @@ Features:
 - Simple and flexible simulation setup
 - Detailed session information
 
-Supported networking solutions:
+Supported networking libraries:
 - [ENet](https://github.com/lsalzman/enet "ENet") ([C# Wrapper](https://github.com/NateShoffner/ENetSharp "C# Wrapper"))
 - [UNet](https://docs.unity3d.com/Manual/UNetUsingTransport.html "UNet")
 - [LiteNetLib](https://github.com/RevenantX/LiteNetLib "LiteNetLib")
