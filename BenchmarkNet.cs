@@ -1,5 +1,5 @@
 /*
- *  BenchmarkNet is a console application for testing the reliable UDP networking libraries
+ *  BenchmarkNet is a console application for testing the reliable UDP networking solutions
  *  Copyright (c) 2018 Stanislav Denisov
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
