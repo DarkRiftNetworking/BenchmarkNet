@@ -261,7 +261,7 @@ namespace BenchmarkNet {
 					Console.SetCursorPosition(0, 0);
 					Console.WriteLine("Benchmarking " + networkingLibraries[selectedLibrary] + "...");
 					Console.WriteLine("Server tick rate: " + serverTickRate + ", Client tick rate: " + clientTickRate + " (ticks per second)");
-					Console.WriteLine(maxClients + " clients, " + reliableMessages + " reliable and " + unreliableMessages + " unreliable messages per client, " + messageData.Length + " bytes per message, " + sendRate + " messages per second");
+					Console.WriteLine(maxClients + " client" + (maxClients > 1 ? "s" : "") + ", " + reliableMessages + " reliable and " + unreliableMessages + " unreliable messages per client, " + messageData.Length + " bytes per message, " + sendRate + " messages per second");
 					
 					if (!maxClientsPass) {
 						Console.ForegroundColor = ConsoleColor.Red;
