@@ -45,4 +45,6 @@ Donations
 --------
 This project has already had an impact and helped developers in an improvement of their networking libraries. If you like this project, you can support me on [Bountysource](https://salt.bountysource.com/checkout/amount?team=nxrighthere).
 
+Bitcoin `173ZRNuT4k7ss7rAVmNCZr6hLfFY4DZubU` Litecoin `LhdxsS7AUhUrKMmMyTX1yL4EQp6tzSonDT`
+
 Any support is much appreciated.
