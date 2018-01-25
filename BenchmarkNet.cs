@@ -1235,17 +1235,17 @@ namespace BenchmarkNet {
 				byte[] data = (byte[])message;
 
 				if (data[0] == messageData[0]) {
-					OnReliableReceived?.Invoke(data);
 					Interlocked.Increment(ref serverReliableReceived);
 					Interlocked.Add(ref serverReliableBytesReceived, data.Length);
 					Interlocked.Increment(ref serverReliableSent);
 					Interlocked.Add(ref serverReliableBytesSent, data.Length);
+					OnReliableReceived?.Invoke(data);
 				} else if (data[0] == reversedData[0]) {
-					OnUnreliableReceived?.Invoke(data);
 					Interlocked.Increment(ref serverUnreliableReceived);
 					Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
 					Interlocked.Increment(ref serverUnreliableSent);
 					Interlocked.Add(ref serverUnreliableBytesSent, data.Length);
+					OnUnreliableReceived?.Invoke(data);
 				}
 			}
 
