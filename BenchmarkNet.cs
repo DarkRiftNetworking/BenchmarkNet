@@ -1107,20 +1107,20 @@ namespace BenchmarkNet {
 						Interlocked.Increment(ref serverReliableReceived);
 						Interlocked.Add(ref serverReliableBytesReceived, data.Bytes.Length);
 						
-						if (client.State == Hazel.ConnectionState.Connected)
+						if (client.State == Hazel.ConnectionState.Connected) {
 							client.SendBytes(messageData, SendOption.Reliable);
-						
-						Interlocked.Increment(ref serverReliableSent);
-						Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
+							Interlocked.Increment(ref serverReliableSent);
+							Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
+						}
 					} else if (data.SendOption == SendOption.None) {
 						Interlocked.Increment(ref serverUnreliableReceived);
 						Interlocked.Add(ref serverUnreliableBytesReceived, data.Bytes.Length);
 
-						if (client.State == Hazel.ConnectionState.Connected)
+						if (client.State == Hazel.ConnectionState.Connected) {
 							client.SendBytes(messageData, SendOption.None);
-						
-						Interlocked.Increment(ref serverUnreliableSent);
-						Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
+							Interlocked.Increment(ref serverUnreliableSent);
+							Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
+						}
 					}
 
 					data.Recycle();
