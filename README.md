@@ -1,5 +1,5 @@
 <p align="center"> 
-<img src="https://i.imgur.com/PoXC5AA.png" alt="alt logo">
+  <img src="https://i.imgur.com/PoXC5AA.png" alt="alt logo">
 </p>
 
 [![GitHub release](https://img.shields.io/github/release/nxrighthere/BenchmarkNet.svg)](https://github.com/nxrighthere/BenchmarkNet/releases) [![PayPal](https://img.shields.io/badge/paypal-donate-green.svg)](https://www.paypal.me/nxrighthere) [![Bountysource](https://img.shields.io/badge/bountysource-donate-green.svg)](https://salt.bountysource.com/checkout/amount?team=nxrighthere) 
@@ -49,3 +49,9 @@ or [Bountysource](https://salt.bountysource.com/checkout/amount?team=nxrighthere
 Bitcoin `173ZRNuT4k7ss7rAVmNCZr6hLfFY4DZubU` Litecoin `LhdxsS7AUhUrKMmMyTX1yL4EQp6tzSonDT`
 
 Any support is much appreciated.
+
+Supporters
+--------
+<p align="left"> 
+  <img src="https://cdn.glitch.com/245a04f9-dee8-4192-b047-a489c1e5ab5c%2Fproject-supporters.png" alt="supporters">
+</p>
