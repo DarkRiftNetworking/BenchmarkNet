@@ -2,7 +2,7 @@
 <img src="https://i.imgur.com/PoXC5AA.png" alt="alt logo">
 </p>
 
-[![GitHub release](https://img.shields.io/github/release/nxrighthere/BenchmarkNet.svg)](https://github.com/nxrighthere/BenchmarkNet/releases) [![Bountysource](https://img.shields.io/badge/bountysource-donate-green.svg)](https://salt.bountysource.com/checkout/amount?team=nxrighthere)
+[![GitHub release](https://img.shields.io/github/release/nxrighthere/BenchmarkNet.svg)](https://github.com/nxrighthere/BenchmarkNet/releases) [![PayPal](https://img.shields.io/badge/paypal-donate-green.svg)](https://www.paypal.me/nxrighthere) [![Bountysource](https://img.shields.io/badge/bountysource-donate-green.svg)](https://salt.bountysource.com/checkout/amount?team=nxrighthere) 
 
 BenchmarkNet is a console application for testing the reliable UDP networking solutions.
 
@@ -43,7 +43,8 @@ If you have any questions, contact me via [email](mailto:nxrighthere@gmail.com "
 
 Donations
 --------
-This project has already had an impact and helped developers in an improvement of their networking libraries. If you like this project, you can support me on [Bountysource](https://salt.bountysource.com/checkout/amount?team=nxrighthere).
+This project has already had an impact and helped developers in an improvement of their networking libraries. If you like this project, you can support me on [PayPal](https://www.paypal.me/nxrighthere)
+or [Bountysource](https://salt.bountysource.com/checkout/amount?team=nxrighthere).
 
 Bitcoin `173ZRNuT4k7ss7rAVmNCZr6hLfFY4DZubU` Litecoin `LhdxsS7AUhUrKMmMyTX1yL4EQp6tzSonDT`
 
