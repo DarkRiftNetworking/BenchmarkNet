@@ -48,7 +48,7 @@ using ExitGames.Client.Photon;
 namespace BenchmarkNet {
 	public class BenchmarkNet {
 		protected const string title = "BenchmarkNet";
-		protected const string version = "1.04";
+		protected const string version = "1.05";
 		protected const string ip = "127.0.0.1";
 		protected static ushort port = 0;
 		protected static ushort maxClients = 0;
@@ -234,6 +234,8 @@ namespace BenchmarkNet {
 				serverThread = new Thread(HazelBenchmark.Server);
 			else
 				serverThread = new Thread(PhotonBenchmark.Server);
+
+			serverThread.Priority = ThreadPriority.AboveNormal;
 
 			serverThread.Start();
 			Thread.Sleep(100);
