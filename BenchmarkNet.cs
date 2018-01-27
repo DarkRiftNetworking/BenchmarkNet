@@ -212,7 +212,7 @@ namespace BenchmarkNet {
 				GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
 
 			if (selectedLibrary == 0)
-				Library.Initialize();
+				ENet.Library.Initialize();
 
 			maxPeers = ushort.MaxValue;
 			maxClientsPass = (selectedLibrary > 0 ? maxClients <= maxPeers : maxClients <= ENet.Native.ENET_PROTOCOL_MAXIMUM_PEER_ID);
@@ -236,7 +236,6 @@ namespace BenchmarkNet {
 				serverThread = new Thread(PhotonBenchmark.Server);
 
 			serverThread.Priority = ThreadPriority.AboveNormal;
-
 			serverThread.Start();
 			Thread.Sleep(100);
 			
@@ -343,7 +342,7 @@ namespace BenchmarkNet {
 				}
 
 				if (selectedLibrary == 0)
-					Library.Deinitialize();
+					ENet.Library.Deinitialize();
 			}, TaskCreationOptions.LongRunning);
 		}
 
