@@ -390,36 +390,35 @@ namespace BenchmarkNet {
 		}
 
 		public static void Server() {
-			using (Host server = new Host()) {
-				server.Create(port, maxClients);
-				
-				Event netEvent = new Event();
+			Host server = new Host();
+			server.Create(port, maxClients);
+			
+			Event netEvent = new Event();
 
-				while (processActive) {
-					server.Service(1000 / serverTickRate, out netEvent);
+			while (processActive) {
+				server.Service(1000 / serverTickRate, out netEvent);
 
-					switch (netEvent.Type) {
-						case EventType.Receive:
-							byte[] data = netEvent.Packet.GetBytes();
+				switch (netEvent.Type) {
+					case EventType.Receive:
+						byte[] data = netEvent.Packet.GetBytes();
 
-							if (netEvent.ChannelID == 2) {
-								Interlocked.Increment(ref serverReliableReceived);
-								Interlocked.Add(ref serverReliableBytesReceived, data.Length);
-								SendReliable(messageData, 0, netEvent.Peer);
-								Interlocked.Increment(ref serverReliableSent);
-								Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
-							} else if (netEvent.ChannelID == 3) {
-								Interlocked.Increment(ref serverUnreliableReceived);
-								Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
-								SendUnreliable(messageData, 1, netEvent.Peer);
-								Interlocked.Increment(ref serverUnreliableSent);
-								Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
-							}
+						if (netEvent.ChannelID == 2) {
+							Interlocked.Increment(ref serverReliableReceived);
+							Interlocked.Add(ref serverReliableBytesReceived, data.Length);
+							SendReliable(messageData, 0, netEvent.Peer);
+							Interlocked.Increment(ref serverReliableSent);
+							Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
+						} else if (netEvent.ChannelID == 3) {
+							Interlocked.Increment(ref serverUnreliableReceived);
+							Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
+							SendUnreliable(messageData, 1, netEvent.Peer);
+							Interlocked.Increment(ref serverUnreliableSent);
+							Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
+						}
 
-							netEvent.Packet.Dispose();
+						netEvent.Packet.Dispose();
 
-							break;
-					}
+						break;
 				}
 			}
 		}
@@ -541,39 +540,38 @@ namespace BenchmarkNet {
 			topology.SentMessagePoolSize = ushort.MaxValue;
 			topology.ReceivedMessagePoolSize = ushort.MaxValue;
 
-			using (NetLibraryManager server = new NetLibraryManager(globalConfig)) {
-				int host = server.AddHost(topology, port, ip);
+			NetLibraryManager server = new NetLibraryManager(globalConfig);
+			int host = server.AddHost(topology, port, ip);
 
-				int hostID, connectionID, channelID, dataLength;
-				byte[] buffer = new byte[1024];
-				NetworkEventType netEvent;
+			int hostID, connectionID, channelID, dataLength;
+			byte[] buffer = new byte[1024];
+			NetworkEventType netEvent;
 
-				while (processActive) {
-					byte error;
+			while (processActive) {
+				byte error;
 
-					while ((netEvent = server.Receive(out hostID, out connectionID, out channelID, buffer, buffer.Length, out dataLength, out error)) != NetworkEventType.Nothing) {
-						switch (netEvent) {
-							case NetworkEventType.DataEvent:
-								if (channelID == 0) {
-									Interlocked.Increment(ref serverReliableReceived);
-									Interlocked.Add(ref serverReliableBytesReceived, dataLength);
-									server.Send(hostID, connectionID, reliableChannel, messageData, messageData.Length, out error); 
-									Interlocked.Increment(ref serverReliableSent);
-									Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
-								} else if (channelID == 1) {
-									Interlocked.Increment(ref serverUnreliableReceived);
-									Interlocked.Add(ref serverUnreliableBytesReceived, dataLength);
-									server.Send(hostID, connectionID, unreliableChannel, messageData, messageData.Length, out error); 
-									Interlocked.Increment(ref serverUnreliableSent);
-									Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
-								}
+				while ((netEvent = server.Receive(out hostID, out connectionID, out channelID, buffer, buffer.Length, out dataLength, out error)) != NetworkEventType.Nothing) {
+					switch (netEvent) {
+						case NetworkEventType.DataEvent:
+							if (channelID == 0) {
+								Interlocked.Increment(ref serverReliableReceived);
+								Interlocked.Add(ref serverReliableBytesReceived, dataLength);
+								server.Send(hostID, connectionID, reliableChannel, messageData, messageData.Length, out error); 
+								Interlocked.Increment(ref serverReliableSent);
+								Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
+							} else if (channelID == 1) {
+								Interlocked.Increment(ref serverUnreliableReceived);
+								Interlocked.Add(ref serverUnreliableBytesReceived, dataLength);
+								server.Send(hostID, connectionID, unreliableChannel, messageData, messageData.Length, out error); 
+								Interlocked.Increment(ref serverUnreliableSent);
+								Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
+							}
 
-								break;
-						}
+							break;
 					}
-
-					Thread.Sleep(1000 / serverTickRate);
 				}
+
+				Thread.Sleep(1000 / serverTickRate);
 			}
 		}
 
