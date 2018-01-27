@@ -1238,13 +1238,13 @@ namespace BenchmarkNet {
 					Interlocked.Add(ref serverReliableBytesReceived, data.Length);
 					Interlocked.Increment(ref serverReliableSent);
 					Interlocked.Add(ref serverReliableBytesSent, data.Length);
-					OnReliableReceived?.Invoke(data);
+					OnReliableReceived(data);
 				} else if (data[0] == reversedData[0]) {
 					Interlocked.Increment(ref serverUnreliableReceived);
 					Interlocked.Add(ref serverUnreliableBytesReceived, data.Length);
 					Interlocked.Increment(ref serverUnreliableSent);
 					Interlocked.Add(ref serverUnreliableBytesSent, data.Length);
-					OnUnreliableReceived?.Invoke(data);
+					OnUnreliableReceived(data);
 				}
 			}
 
