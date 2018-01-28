@@ -54,5 +54,5 @@ Any support is much appreciated.
 Supporters
 --------
 <p align="left"> 
-  <img src="https://cdn.glitch.com/245a04f9-dee8-4192-b047-a489c1e5ab5c%2Fproject-supporters.png" alt="supporters">
+  <img src="https://drive.google.com/uc?id=1jVxLviw_CHnjygdfSIdGzLQS2DBdYsa8" alt="supporters">
 </p>
