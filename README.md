@@ -20,6 +20,7 @@ Supported networking libraries:
 - [MiniUDP](https://github.com/ashoulson/MiniUDP "MiniUDP")
 - [Hazel](https://github.com/DarkRiftNetworking/Hazel-Networking "Hazel")
 - [Photon](https://www.photonengine.com/en/OnPremise "Photon")
+- [Neutrino](https://github.com/Claytonious/Neutrino)
 
 You can find the latest benchmark results on the [wiki page](https://github.com/nxrighthere/BenchmarkNet/wiki/Benchmark-Results).
 
