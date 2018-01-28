@@ -44,6 +44,9 @@ using Hazel;
 using Hazel.Udp;
 // Photon (https://www.photonengine.com/en/OnPremise)
 using ExitGames.Client.Photon;
+// Neutrino (https://github.com/Claytonious/Neutrino)
+using Neutrino.Core;
+using Neutrino.Core.Messages;
 
 namespace BenchmarkNet {
 	public class BenchmarkNet {
@@ -97,7 +100,8 @@ namespace BenchmarkNet {
 			"Lidgren",
 			"MiniUDP",
 			"Hazel",
-			"Photon"
+			"Photon",
+			"Neutrino"
 		};
 
 		private static Func<int, string> Space = (value) => ("".PadRight(value));
@@ -232,8 +236,10 @@ namespace BenchmarkNet {
 				serverThread = new Thread(MiniUDPBenchmark.Server);
 			else if (selectedLibrary == 5)
 				serverThread = new Thread(HazelBenchmark.Server);
-			else
+			else if (selectedLibrary == 6)
 				serverThread = new Thread(PhotonBenchmark.Server);
+			else
+				serverThread = new Thread(NeutrinoBenchmark.Server);
 
 			serverThread.Priority = ThreadPriority.AboveNormal;
 			serverThread.Start();
@@ -366,8 +372,10 @@ namespace BenchmarkNet {
 						clients[i] = MiniUDPBenchmark.Client();
 					else if (selectedLibrary == 5)
 						clients[i] = HazelBenchmark.Client();
-					else
+					else if (selectedLibrary == 6)
 						clients[i] = PhotonBenchmark.Client();
+					else
+						clients[i] = NeutrinoBenchmark.Client();
 					
 					Interlocked.Increment(ref clientsStartedCount);
 					Thread.Sleep(15);
@@ -1372,6 +1380,144 @@ namespace BenchmarkNet {
 				}
 
 				client.Disconnect();
+			}, TaskCreationOptions.LongRunning);
+		}
+	}
+
+	public class NeutrinoBenchmark : BenchmarkNet {
+		private class ReliableMessage : NetworkMessage {
+			public ReliableMessage() {
+				IsGuaranteed = true;
+			}
+
+			[MsgPack.Serialization.MessagePackMember(0)]
+			public string Message { get; set; }
+		}
+
+		private class UnreliableMessage : NetworkMessage {
+			public UnreliableMessage() {
+				IsGuaranteed = false;
+			}
+
+			[MsgPack.Serialization.MessagePackMember(0)]
+			public string Message { get; set; }
+		}
+
+		public static void Server() {
+			Node server = new Node(port, typeof(NeutrinoBenchmark).Assembly);
+			
+			server.OnReceived += (message) => {
+				NetworkPeer peer = message.Source;
+
+				if (message is ReliableMessage) {
+					ReliableMessage reliableMessage = message as ReliableMessage;
+					Interlocked.Increment(ref serverReliableReceived);
+					Interlocked.Add(ref serverReliableBytesReceived, reliableMessage.Message.Length);
+					peer.SendNetworkMessage(server.GetMessage<ReliableMessage>());
+					Interlocked.Increment(ref serverReliableSent);
+					Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
+				} else if (message is UnreliableMessage) {
+					UnreliableMessage unreliableMessage = message as UnreliableMessage;
+					Interlocked.Increment(ref serverUnreliableReceived);
+					Interlocked.Add(ref serverUnreliableBytesReceived, unreliableMessage.Message.Length);
+					peer.SendNetworkMessage(server.GetMessage<UnreliableMessage>());
+					Interlocked.Increment(ref serverUnreliableSent);
+					Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
+				}
+			};
+
+			server.Start();
+
+			while (processActive) {
+				server.Update();
+				Thread.Sleep(1000 / serverTickRate);
+			}
+		}
+
+		public static async Task Client() {
+			await Task.Factory.StartNew(() => {
+				Node client = new Node(Task.CurrentId.ToString(), ip, port, typeof(NeutrinoBenchmark).Assembly);
+				
+				int reliableToSend = 0;
+				int unreliableToSend = 0;
+				int reliableSentCount = 0;
+				int unreliableSentCount = 0;
+
+				Task.Factory.StartNew(async() => {
+					bool reliableIncremented = false;
+					bool unreliableIncremented = false;
+
+					while (processActive) {
+						if (reliableToSend > 0) {
+							ReliableMessage reliableMessage = client.GetMessage<ReliableMessage>();
+							reliableMessage.Message = message;
+							client.SendToAll(reliableMessage);
+							Interlocked.Decrement(ref reliableToSend);
+							Interlocked.Increment(ref reliableSentCount);
+							Interlocked.Increment(ref clientsReliableSent);
+							Interlocked.Add(ref clientsReliableBytesSent, messageData.Length);
+						}
+
+						if (unreliableToSend > 0) {
+							UnreliableMessage unreliableMessage = client.GetMessage<UnreliableMessage>();
+							unreliableMessage.Message = message;
+							client.SendToAll(unreliableMessage);
+							Interlocked.Decrement(ref unreliableToSend);
+							Interlocked.Increment(ref unreliableSentCount);
+							Interlocked.Increment(ref clientsUnreliableSent);
+							Interlocked.Add(ref clientsUnreliableBytesSent, reversedData.Length);
+						}
+
+						if (reliableToSend > 0 && !reliableIncremented) {
+							reliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (reliableToSend == 0 && reliableIncremented) {
+							reliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						if (unreliableToSend > 0 && !unreliableIncremented) {
+							unreliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (unreliableToSend == 0 && unreliableIncremented) {
+							unreliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						await Task.Delay(1000 / sendRate);
+					}
+				}, TaskCreationOptions.AttachedToParent);
+
+				client.OnPeerConnected += (peer) => {
+					Interlocked.Increment(ref clientsConnectedCount);
+					Interlocked.Exchange(ref reliableToSend, reliableMessages);
+					Interlocked.Exchange(ref unreliableToSend, unreliableMessages);
+				};
+
+				client.OnPeerDisconnected += (peer) => {
+					Interlocked.Increment(ref clientsDisconnectedCount);
+					Interlocked.Exchange(ref reliableToSend, 0);
+					Interlocked.Exchange(ref unreliableToSend, 0);
+				};
+				
+				client.OnReceived += (message) => {
+					if (message is ReliableMessage) {
+						ReliableMessage reliableMessage = message as ReliableMessage;
+						Interlocked.Increment(ref clientsReliableReceived);
+						Interlocked.Add(ref clientsReliableBytesReceived, reliableMessage.Message.Length);
+					} else if (message is UnreliableMessage) {
+						UnreliableMessage unreliableMessage = message as UnreliableMessage;
+						Interlocked.Increment(ref clientsUnreliableReceived);
+						Interlocked.Add(ref clientsUnreliableBytesReceived, unreliableMessage.Message.Length);
+					}
+				};
+
+				client.Start();
+
+				while (processActive) {
+					client.Update();
+					Thread.Sleep(1000 / clientTickRate);
+				}
 			}, TaskCreationOptions.LongRunning);
 		}
 	}
