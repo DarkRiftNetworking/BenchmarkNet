@@ -1259,12 +1259,12 @@ namespace BenchmarkNet {
 			public void OnStatusChanged(StatusCode statusCode) {
 				switch (statusCode) {
 					case StatusCode.Connect:
-						OnConnected.Invoke();
+						OnConnected();
 
 						break;
 
 					case StatusCode.Disconnect:
-						OnDisconnected.Invoke();
+						OnDisconnected();
 
 						break;
 				}
