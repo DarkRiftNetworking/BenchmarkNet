@@ -68,6 +68,7 @@ namespace BenchmarkNet {
 		protected static bool processCompleted = false;
 		protected static bool processOverload = false;
 		protected static bool processFailure = false;
+		protected static bool instantMode = false;
 		protected static bool lowLatencyMode = false;
 		protected static bool maxClientsPass = true;
 		protected static Thread serverThread;
@@ -113,6 +114,9 @@ namespace BenchmarkNet {
 			for (int i = 0; i < arguments.Length; i++) {
 				string argument = arguments[i];
 
+				if (argument == "-instant")
+					instantMode = true;
+
 				if (argument == "-lowlatency")
 					lowLatencyMode = true;
 			}
@@ -139,65 +143,60 @@ namespace BenchmarkNet {
 			Byte.TryParse(Console.ReadLine(), out selectedLibrary);
 
 			ushort defaultPort = 9500;
+			ushort defaultMaxClients = 1000;
+			int defaultServerTickRate = 64;			
+			int defaultClientTickRate = 64;			
+			int defaultSendRate = 15;
+			int defaultReliableMessages = 500;
+			int defaultUnreliableMessages = 1000;
+			string defaultMessage = "Sometimes we just need a good networking library";
 
-			Console.Write("Port (default " + defaultPort + "): ");
-			UInt16.TryParse(Console.ReadLine(), out port);
+			if (!instantMode) {
+				Console.Write("Port (default " + defaultPort + "): ");
+				UInt16.TryParse(Console.ReadLine(), out port);
+
+				Console.Write("Simulated clients (default " + defaultMaxClients + "): ");
+				UInt16.TryParse(Console.ReadLine(), out maxClients);
+
+				Console.Write("Server tick rate (default " + defaultServerTickRate + "): ");
+				Int32.TryParse(Console.ReadLine(), out serverTickRate);
+
+				Console.Write("Client tick rate (default " + defaultClientTickRate + "): ");
+				Int32.TryParse(Console.ReadLine(), out clientTickRate);
+
+				Console.Write("Client send rate (default " + defaultSendRate + "): ");
+				Int32.TryParse(Console.ReadLine(), out sendRate);
+
+				Console.Write("Reliable messages per client (default " + defaultReliableMessages + "): ");
+				Int32.TryParse(Console.ReadLine(), out reliableMessages);
+
+				Console.Write("Unreliable messages per client (default " + defaultUnreliableMessages + "): ");
+				Int32.TryParse(Console.ReadLine(), out unreliableMessages);
+
+				Console.Write("Message (default " + defaultMessage.Length + " characters): ");
+				message = Console.ReadLine();
+			}			
 			
 			if (port == 0)
 				port = defaultPort;
 
-			ushort defaultMaxClients = 1000;
-
-			Console.Write("Simulated clients (default " + defaultMaxClients + "): ");
-			UInt16.TryParse(Console.ReadLine(), out maxClients);
-
 			if (maxClients == 0)
 				maxClients = defaultMaxClients;
-
-			int defaultServerTickRate = 64;
-
-			Console.Write("Server tick rate (default " + defaultServerTickRate + "): ");
-			Int32.TryParse(Console.ReadLine(), out serverTickRate);
 
 			if (serverTickRate == 0)
 				serverTickRate = defaultServerTickRate;
 
-			int defaultClientTickRate = 64;
-
-			Console.Write("Client tick rate (default " + defaultClientTickRate + "): ");
-			Int32.TryParse(Console.ReadLine(), out clientTickRate);
-
 			if (clientTickRate == 0)
 				clientTickRate = defaultClientTickRate;
-
-			int defaultSendRate = 15;
-
-			Console.Write("Client send rate (default " + defaultSendRate + "): ");
-			Int32.TryParse(Console.ReadLine(), out sendRate);
 
 			if (sendRate == 0)
 				sendRate = defaultSendRate;
 
-			int defaultReliableMessages = 500;
-
-			Console.Write("Reliable messages per client (default " + defaultReliableMessages + "): ");
-			Int32.TryParse(Console.ReadLine(), out reliableMessages);
-
 			if (reliableMessages == 0)
 				reliableMessages = defaultReliableMessages;
 
-			int defaultUnreliableMessages = 1000;
-
-			Console.Write("Unreliable messages per client (default " + defaultUnreliableMessages + "): ");
-			Int32.TryParse(Console.ReadLine(), out unreliableMessages);
-
 			if (unreliableMessages == 0)
 				unreliableMessages = defaultUnreliableMessages;
-
-			string defaultMessage = "Sometimes we just need a good networking library";
-
-			Console.Write("Message (default " + defaultMessage.Length + " characters): ");
-			message = Console.ReadLine();
 
 			if (message == string.Empty)
 				message = defaultMessage;
