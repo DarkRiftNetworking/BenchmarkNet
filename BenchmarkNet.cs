@@ -258,7 +258,7 @@ namespace BenchmarkNet {
 			await Task.Factory.StartNew(() => {
 				int spinnerTimer = 0;
 				int spinnerSequence = 0;
-				string spinner = "";
+				string spinnerString = "";
 				string clientString = "Client" + (maxClients > 1 ? "s" : "");
 				Stopwatch elapsedTime = new Stopwatch();
 
@@ -302,17 +302,17 @@ namespace BenchmarkNet {
 					}
 
 					switch (spinnerSequence % 4) {
-						case 0: spinner = "/";
+						case 0: spinnerString = "/";
 							break;
-						case 1: spinner = "—";
+						case 1: spinnerString = "—";
 							break;
-						case 2: spinner = "\\";
+						case 2: spinnerString = "\\";
 							break;
-						case 3: spinner = "|";
+						case 3: spinnerString = "|";
 							break;
 					}
 
-					Console.WriteLine(Environment.NewLine + "Press any key to stop the process " + spinner);
+					Console.WriteLine(Environment.NewLine + "Press any key to stop the process " + spinnerString);
 					Thread.Sleep(15);
 				}
 
