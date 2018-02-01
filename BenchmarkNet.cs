@@ -257,8 +257,11 @@ namespace BenchmarkNet {
 			await Task.Factory.StartNew(() => {
 				int spinnerTimer = 0;
 				int spinnerSequence = 0;
-				string spinnerString = "";
-				string clientString = "Client" + (maxClients > 1 ? "s" : "");
+				string[] strings = {
+					"",
+					"Client" + (maxClients > 1 ? "s" : "")
+				};
+
 				Stopwatch elapsedTime = new Stopwatch();
 
 				elapsedTime.Start();
@@ -268,7 +271,7 @@ namespace BenchmarkNet {
 					Console.SetCursorPosition(0, 0);
 					Console.WriteLine("Benchmarking " + networkingLibraries[selectedLibrary] + "...");
 					Console.WriteLine("Server tick rate: " + serverTickRate + ", Client tick rate: " + clientTickRate + " (ticks per second)");
-					Console.WriteLine(maxClients + " " + clientString.ToLower()  + ", " + reliableMessages + " reliable and " + unreliableMessages + " unreliable messages per client, " + messageData.Length + " bytes per message, " + sendRate + " messages per second");
+					Console.WriteLine(maxClients + " " + strings[1].ToLower()  + ", " + reliableMessages + " reliable and " + unreliableMessages + " unreliable messages per client, " + messageData.Length + " bytes per message, " + sendRate + " messages per second");
 					
 					if (!maxClientsPass) {
 						Console.ForegroundColor = ConsoleColor.Red;
@@ -283,12 +286,12 @@ namespace BenchmarkNet {
 					}
 
 					Console.WriteLine(Environment.NewLine + "Server status: " + (processFailure || !serverThread.IsAlive ? "Failure" + Space(2) : (processOverload ? "Overload" + Space(1) : (processCompleted ? "Completed" : "Running" + Space(2)))));
-					Console.WriteLine(clientString + " status: " + clientsStartedCount + " started, " + clientsConnectedCount + " connected, " + clientsDisconnectedCount + " dropped");
+					Console.WriteLine(strings[1] + " status: " + clientsStartedCount + " started, " + clientsConnectedCount + " connected, " + clientsDisconnectedCount + " dropped");
 					Console.WriteLine("Server payload flow: " + PayloadFlow(clientsChannelsCount, messageData.Length, sendRate).ToString("0.00") + " mbps (current), " + PayloadFlow(maxClients * 2, messageData.Length, sendRate).ToString("0.00") + " mbps (predicted)" + Space(10));
-					Console.WriteLine(clientString + " sent -> Reliable: " + clientsReliableSent + " messages (" + clientsReliableBytesSent + " bytes), Unreliable: " + clientsUnreliableSent + " messages (" + clientsUnreliableBytesSent + " bytes)");
+					Console.WriteLine(strings[1] + " sent -> Reliable: " + clientsReliableSent + " messages (" + clientsReliableBytesSent + " bytes), Unreliable: " + clientsUnreliableSent + " messages (" + clientsUnreliableBytesSent + " bytes)");
 					Console.WriteLine("Server received <- Reliable: " + serverReliableReceived + " messages (" + serverReliableBytesReceived + " bytes), Unreliable: " + serverUnreliableReceived + " messages (" + serverUnreliableBytesReceived + " bytes)");
 					Console.WriteLine("Server sent -> Reliable: " + serverReliableSent + " messages (" + serverReliableBytesSent + " bytes), Unreliable: " + serverUnreliableSent + " messages (" + serverUnreliableBytesSent + " bytes)");
-					Console.WriteLine(clientString + " received <- Reliable: " + clientsReliableReceived + " messages (" + clientsReliableBytesReceived + " bytes), Unreliable: " + clientsUnreliableReceived + " messages (" + clientsUnreliableBytesReceived + " bytes)");
+					Console.WriteLine(strings[1] + " received <- Reliable: " + clientsReliableReceived + " messages (" + clientsReliableBytesReceived + " bytes), Unreliable: " + clientsUnreliableReceived + " messages (" + clientsUnreliableBytesReceived + " bytes)");
 					Console.WriteLine("Total - Reliable: " + ((ulong)clientsReliableSent + (ulong)serverReliableReceived + (ulong)serverReliableSent + (ulong)clientsReliableReceived) + " messages (" + ((ulong)clientsReliableBytesSent + (ulong)serverReliableBytesReceived + (ulong)serverReliableBytesSent + (ulong)clientsReliableBytesReceived) + " bytes), Unreliable: " + ((ulong)clientsUnreliableSent + (ulong)serverUnreliableReceived + (ulong)serverUnreliableSent + (ulong)clientsUnreliableReceived) + " messages (" + ((ulong)clientsUnreliableBytesSent + (ulong)serverUnreliableBytesReceived + (ulong)serverUnreliableBytesSent + (ulong)clientsUnreliableBytesReceived) + " bytes)");
 					Console.WriteLine("Expected - Reliable: " + (maxClients * (ulong)reliableMessages * 4) + " messages (" + (maxClients * (ulong)reliableMessages * (ulong)messageData.Length * 4) + " bytes), Unreliable: " + (maxClients * (ulong)unreliableMessages * 4) + " messages (" + (maxClients * (ulong)unreliableMessages * (ulong)messageData.Length * 4) + " bytes)");
 					Console.WriteLine("Elapsed time: " + elapsedTime.Elapsed.Hours.ToString("00") + ":" + elapsedTime.Elapsed.Minutes.ToString("00") + ":" + elapsedTime.Elapsed.Seconds.ToString("00"));
@@ -301,17 +304,17 @@ namespace BenchmarkNet {
 					}
 
 					switch (spinnerSequence % 4) {
-						case 0: spinnerString = "/";
+						case 0: strings[0] = "/";
 							break;
-						case 1: spinnerString = "—";
+						case 1: strings[0] = "—";
 							break;
-						case 2: spinnerString = "\\";
+						case 2: strings[0] = "\\";
 							break;
-						case 3: spinnerString = "|";
+						case 3: strings[0] = "|";
 							break;
 					}
 
-					Console.WriteLine(Environment.NewLine + "Press any key to stop the process " + spinnerString);
+					Console.WriteLine(Environment.NewLine + "Press any key to stop the process " + strings[0]);
 					Thread.Sleep(15);
 				}
 
