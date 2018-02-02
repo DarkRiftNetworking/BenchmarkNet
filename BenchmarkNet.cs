@@ -112,7 +112,7 @@ namespace BenchmarkNet {
 			Console.Title = title;
 
 			for (int i = 0; i < arguments.Length; i++) {
-				string argument = arguments[i];
+				string argument = arguments[i].ToLower();
 
 				if (argument == "-instant")
 					instantMode = true;
