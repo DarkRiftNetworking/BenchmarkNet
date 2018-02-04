@@ -259,7 +259,8 @@ namespace BenchmarkNet {
 				int spinnerSequence = 0;
 				string[] strings = {
 					"",
-					"Client" + (maxClients > 1 ? "s" : "")
+					"Client" + (maxClients > 1 ? "s" : ""),
+					(selectedLibrary > 0 ? maxPeers : Native.ENET_PROTOCOL_MAXIMUM_PEER_ID).ToString()
 				};
 
 				Stopwatch elapsedTime = new Stopwatch();
@@ -271,11 +272,11 @@ namespace BenchmarkNet {
 					Console.SetCursorPosition(0, 0);
 					Console.WriteLine("Benchmarking " + networkingLibraries[selectedLibrary] + "...");
 					Console.WriteLine("Server tick rate: " + serverTickRate + ", Client tick rate: " + clientTickRate + " (ticks per second)");
-					Console.WriteLine(maxClients + " " + strings[1].ToLower()  + ", " + reliableMessages + " reliable and " + unreliableMessages + " unreliable messages per client, " + messageData.Length + " bytes per message, " + sendRate + " messages per second");
+					Console.WriteLine(maxClients + " " + strings[1].ToLower() + ", " + reliableMessages + " reliable and " + unreliableMessages + " unreliable messages per client, " + messageData.Length + " bytes per message, " + sendRate + " messages per second");
 					
 					if (!maxClientsPass) {
 						Console.ForegroundColor = ConsoleColor.Red;
-						Console.WriteLine("This networking library doesn't support more than " + (selectedLibrary > 0 ? maxPeers : Native.ENET_PROTOCOL_MAXIMUM_PEER_ID) + " peers per server!");
+						Console.WriteLine("This networking library doesn't support more than " + strings[2] + " peers per server!");
 						Console.ResetColor();
 					}
 
