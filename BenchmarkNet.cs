@@ -60,7 +60,7 @@ namespace BenchmarkNet {
 		protected static int sendRate = 0;
 		protected static int reliableMessages = 0;
 		protected static int unreliableMessages = 0;
-		protected static string message = "";
+		protected static string message = String.Empty;
 		protected static char[] reversedMessage;
 		protected static byte[] messageData;
 		protected static byte[] reversedData;
@@ -105,7 +105,7 @@ namespace BenchmarkNet {
 			"Neutrino"
 		};
 
-		private static Func<int, string> Space = (value) => ("".PadRight(value));
+		private static Func<int, string> Space = (value) => (String.Empty.PadRight(value));
 		private static Func<int, decimal, decimal, decimal> PayloadFlow = (clientsChannelsCount, messageLength, sendRate) => (clientsChannelsCount * (messageLength * sendRate * 2) * 8 / (1000 * 1000)) * 2;
 		
 		private static void Main(string[] arguments) {
@@ -198,7 +198,7 @@ namespace BenchmarkNet {
 			if (unreliableMessages == 0)
 				unreliableMessages = defaultUnreliableMessages;
 
-			if (message == string.Empty)
+			if (message == String.Empty)
 				message = defaultMessage;
 
 			reversedMessage = message.ToCharArray();
@@ -258,8 +258,8 @@ namespace BenchmarkNet {
 				int spinnerTimer = 0;
 				int spinnerSequence = 0;
 				string[] strings = {
-					"",
-					"Client" + (maxClients > 1 ? "s" : ""),
+					String.Empty,
+					"Client" + (maxClients > 1 ? "s" : String.Empty),
 					(selectedLibrary > 0 ? maxPeers : Native.ENET_PROTOCOL_MAXIMUM_PEER_ID).ToString()
 				};
 
@@ -1028,7 +1028,7 @@ namespace BenchmarkNet {
 			await Task.Factory.StartNew(() => {
 				NetCore client = new NetCore(title, false);
 				
-				MiniUDP.NetPeer connection = client.Connect(NetUtil.StringToEndPoint(ip + ":" + port), "");
+				MiniUDP.NetPeer connection = client.Connect(NetUtil.StringToEndPoint(ip + ":" + port), String.Empty);
 
 				int reliableToSend = 0;
 				int unreliableToSend = 0;
