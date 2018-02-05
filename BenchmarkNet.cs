@@ -987,14 +987,6 @@ namespace BenchmarkNet {
 	}
 
 	public class MiniUDPBenchmark : BenchmarkNet {
-		private static void SendReliable(byte[] data, MiniUDP.NetPeer peer) {
-			peer.QueueNotification(data, (ushort)data.Length); // Reliable Ordered (https://github.com/ashoulson/MiniUDP/blob/master/MiniUDP/Threaded/NetPeer.cs#L105)
-		}
-
-		private static void SendUnreliable(byte[] data, MiniUDP.NetPeer peer) {
-			peer.SendPayload(data, (ushort)data.Length); // Unreliable Sequenced
-		}
-
 		public static void Server() {
 			NetCore server = new NetCore(title, true);
 
@@ -1003,7 +995,7 @@ namespace BenchmarkNet {
 			server.PeerNotification += (peer, data, dataLength) => {
 				Interlocked.Increment(ref serverReliableReceived);
 				Interlocked.Add(ref serverReliableBytesReceived, dataLength);
-				SendReliable(messageData, peer);
+				peer.QueueNotification(messageData, (ushort)messageData.Length);
 				Interlocked.Increment(ref serverReliableSent);
 				Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
 			};
@@ -1011,7 +1003,7 @@ namespace BenchmarkNet {
 			server.PeerPayload += (peer, data, dataLength) => {
 				Interlocked.Increment(ref serverUnreliableReceived);
 				Interlocked.Add(ref serverUnreliableBytesReceived, dataLength);
-				SendUnreliable(messageData, peer);
+				peer.SendPayload(messageData, (ushort)messageData.Length);
 				Interlocked.Increment(ref serverUnreliableSent);
 				Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
 			};
@@ -1041,7 +1033,7 @@ namespace BenchmarkNet {
 
 					while (processActive) {
 						if (reliableToSend > 0) {
-							SendReliable(messageData, connection);
+							connection.QueueNotification(messageData, (ushort)messageData.Length);
 							Interlocked.Decrement(ref reliableToSend);
 							Interlocked.Increment(ref reliableSentCount);
 							Interlocked.Increment(ref clientsReliableSent);
@@ -1049,7 +1041,7 @@ namespace BenchmarkNet {
 						}
 
 						if (unreliableToSend > 0) {
-							SendUnreliable(messageData, connection);
+							connection.SendPayload(messageData, (ushort)messageData.Length);
 							Interlocked.Decrement(ref unreliableToSend);
 							Interlocked.Increment(ref unreliableSentCount);
 							Interlocked.Increment(ref clientsUnreliableSent);
