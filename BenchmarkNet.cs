@@ -221,7 +221,7 @@ namespace BenchmarkNet {
 			maxClientsPass = (selectedLibrary > 0 ? maxClients <= maxPeers : maxClients <= ENet.Native.ENET_PROTOCOL_MAXIMUM_PEER_ID);
 
 			if (!maxClientsPass)
-				maxClients = Math.Min(Math.Max((ushort)1, (ushort)maxClients), (selectedLibrary > 0 ? maxPeers : (ushort)Native.ENET_PROTOCOL_MAXIMUM_PEER_ID));
+				maxClients = Math.Min(Math.Max((ushort)1, (ushort)maxClients), (selectedLibrary > 0 ? maxPeers : (ushort)ENet.Native.ENET_PROTOCOL_MAXIMUM_PEER_ID));
 
 			if (selectedLibrary == 0)
 				serverThread = new Thread(ENetBenchmark.Server);
@@ -260,7 +260,7 @@ namespace BenchmarkNet {
 				string[] strings = {
 					String.Empty,
 					"Client" + (maxClients > 1 ? "s" : String.Empty),
-					(selectedLibrary > 0 ? maxPeers : Native.ENET_PROTOCOL_MAXIMUM_PEER_ID).ToString()
+					(selectedLibrary > 0 ? maxPeers : ENet.Native.ENET_PROTOCOL_MAXIMUM_PEER_ID).ToString()
 				};
 
 				Stopwatch elapsedTime = new Stopwatch();
