@@ -122,8 +122,7 @@ namespace BenchmarkNet {
 			}
 
 			Console.SetIn(new StreamReader(Console.OpenStandardInput(8192), Console.InputEncoding, false, bufferSize: 1024));
-			Console.WriteLine("Welcome to " + title + "!");
-			Console.WriteLine("Version " + version);
+			Console.WriteLine("Welcome to " + title + Space(1) + version + "!");
 			Console.WriteLine(Environment.NewLine + "Source code is available on GitHub (https://github.com/nxrighthere/BenchmarkNet)");
 			Console.WriteLine("If you have any questions, contact me (nxrighthere@gmail.com)");
 			
@@ -144,8 +143,8 @@ namespace BenchmarkNet {
 
 			ushort defaultPort = 9500;
 			ushort defaultMaxClients = 1000;
-			int defaultServerTickRate = 64;			
-			int defaultClientTickRate = 64;			
+			int defaultServerTickRate = 64;
+			int defaultClientTickRate = 64;
 			int defaultSendRate = 15;
 			int defaultReliableMessages = 500;
 			int defaultUnreliableMessages = 1000;
@@ -175,7 +174,7 @@ namespace BenchmarkNet {
 
 				Console.Write("Message (default " + defaultMessage.Length + " characters): ");
 				message = Console.ReadLine();
-			}			
+			}
 			
 			if (port == 0)
 				port = defaultPort;
@@ -272,7 +271,7 @@ namespace BenchmarkNet {
 					Console.SetCursorPosition(0, 0);
 					Console.WriteLine("Benchmarking " + networkingLibraries[selectedLibrary] + "...");
 					Console.WriteLine("Server tick rate: " + serverTickRate + ", Client tick rate: " + clientTickRate + " (ticks per second)");
-					Console.WriteLine(maxClients + " " + strings[1].ToLower() + ", " + reliableMessages + " reliable and " + unreliableMessages + " unreliable messages per client, " + messageData.Length + " bytes per message, " + sendRate + " messages per second");
+					Console.WriteLine(maxClients + Space(1) + strings[1].ToLower() + ", " + reliableMessages + " reliable and " + unreliableMessages + " unreliable messages per client, " + messageData.Length + " bytes per message, " + sendRate + " messages per second");
 					
 					if (!maxClientsPass) {
 						Console.ForegroundColor = ConsoleColor.Red;
@@ -985,7 +984,7 @@ namespace BenchmarkNet {
 			}, TaskCreationOptions.LongRunning);
 		}
 	}
-
+	
 	public class MiniUDPBenchmark : BenchmarkNet {
 		public static void Server() {
 			NetCore server = new NetCore(title, true);
