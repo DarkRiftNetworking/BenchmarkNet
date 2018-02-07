@@ -2,7 +2,7 @@
   <img src="https://i.imgur.com/PoXC5AA.png" alt="alt logo">
 </p>
 
-[![GitHub release](https://img.shields.io/github/release/nxrighthere/BenchmarkNet.svg)](https://github.com/nxrighthere/BenchmarkNet/releases) [![PayPal](https://img.shields.io/badge/paypal-donate-green.svg)](https://www.paypal.me/nxrighthere) [![Bountysource](https://img.shields.io/badge/bountysource-donate-green.svg)](https://salt.bountysource.com/checkout/amount?team=nxrighthere) 
+[![GitHub release](https://img.shields.io/github/release/nxrighthere/BenchmarkNet.svg)](https://github.com/nxrighthere/BenchmarkNet/releases) [![PayPal](https://drive.google.com/uc?id=1OQrtNBVJehNVxgPf6T6yX1wIysz1ElLR)](https://www.paypal.me/nxrighthere) [![Bountysource](https://drive.google.com/uc?id=19QRobscL8Ir2RL489IbVjcw3fULfWS_Q)](https://salt.bountysource.com/checkout/amount?team=nxrighthere)
 
 BenchmarkNet is a console application for testing the reliable UDP networking solutions.
 
