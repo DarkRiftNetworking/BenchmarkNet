@@ -39,131 +39,166 @@ namespace BenchmarkNet
     {
         public static void Server()
         {
-            using (DarkRiftServer server = new DarkRiftServer(new ServerSpawnData(IPAddress.Parse(ip), port, IPVersion.IPv4)))
-            {
-                server.Start();
+            DarkRiftServer server = new DarkRiftServer(new ServerSpawnData(IPAddress.Parse(ip), port, IPVersion.IPv4));
 
-                server.ClientManager.ClientConnected += (sender, e) =>
-                {
-                    e.Client.MessageReceived += (sender2, e2) =>
+            server.Start();
+
+            server.ClientManager.ClientConnected += (peer, netEvent) => {
+                netEvent.Client.MessageReceived += (sender, data) => {
+                    using (Message message = data.GetMessage())
                     {
-                        using (Message message = e2.GetMessage())
                         using (DarkRiftReader reader = message.GetReader())
                         {
-                            if (e2.SendMode == SendMode.Reliable)
+                            if (data.SendMode == SendMode.Reliable)
                             {
                                 Interlocked.Increment(ref serverReliableReceived);
+                                Interlocked.Add(ref serverReliableBytesReceived, reader.ReadBytes().Length);
+
                                 using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
                                 {
-                                    writer.Write(messageData);         //TODO use WriteRaw once exposed
+                                    writer.WriteRaw(messageData, 0, messageData.Length);
 
-                                    using (Message outMessage = Message.Create(0, writer))
-                                        e2.Client.SendMessage(message, SendMode.Reliable);
+                                    using (Message reliableMessage = Message.Create(0, writer))
+                                        data.Client.SendMessage(reliableMessage, SendMode.Reliable);
                                 }
+
                                 Interlocked.Increment(ref serverReliableSent);
                                 Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
-                                Interlocked.Add(ref serverReliableBytesReceived, reader.Length);
                             }
                             else
                             {
                                 Interlocked.Increment(ref serverUnreliableReceived);
+                                Interlocked.Add(ref serverUnreliableBytesReceived, reader.ReadBytes().Length);
+
                                 using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
                                 {
-                                    writer.Write(messageData);         //TODO use WriteRaw once exposed
+                                    writer.WriteRaw(messageData, 0, messageData.Length);
 
-                                    using (Message outMessage = Message.Create(0, writer))
-                                        e2.Client.SendMessage(message, SendMode.Unreliable);
+                                    using (Message unreliableMessage = Message.Create(0, writer))
+                                        data.Client.SendMessage(unreliableMessage, SendMode.Unreliable);
                                 }
+
                                 Interlocked.Increment(ref serverUnreliableSent);
                                 Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
-                                Interlocked.Add(ref serverUnreliableBytesReceived, reader.Length);
                             }
                         }
-                    };
+                    }
                 };
+            };
 
-                while (processActive)
-                {
-                    server.ExecuteDispatcherTasks();
-                }
+            while (processActive)
+            {
+                server.ExecuteDispatcherTasks();
             }
         }
 
         public static async Task Client()
         {
             await Task.Factory.StartNew(async () => {
-                using (DarkRiftClient client = new DarkRiftClient())
-                {
-                    client.Connect(IPAddress.Parse(ip), port, IPVersion.IPv4);
+                DarkRiftClient client = new DarkRiftClient();
 
-                    int reliableToSend = 0;
-                    int unreliableToSend = 0;
-                    int reliableSentCount = 0;
-                    int unreliableSentCount = 0;
+                client.Connect(IPAddress.Parse(ip), port, IPVersion.IPv4);
 
-                    Interlocked.Increment(ref clientsConnectedCount);
-                    Interlocked.Exchange(ref reliableToSend, reliableMessages);
-                    Interlocked.Exchange(ref unreliableToSend, unreliableMessages);
+                int reliableToSend = 0;
+                int unreliableToSend = 0;
+                int reliableSentCount = 0;
+                int unreliableSentCount = 0;
+                
+                bool reliableIncremented = false;
+                bool unreliableIncremented = false;
 
-                    client.MessageReceived += (sender, e) =>
+                client.Disconnected += (sender, data) => {
+                    Interlocked.Increment(ref clientsDisconnectedCount);
+                    Interlocked.Exchange(ref reliableToSend, 0);
+                    Interlocked.Exchange(ref unreliableToSend, 0);
+                };
+
+                client.MessageReceived += (sender, data) => {
+                    using (Message message = data.GetMessage())
                     {
-                        using (Message message = e.GetMessage())
                         using (DarkRiftReader reader = message.GetReader())
                         {
-                            if (e.SendMode == SendMode.Reliable)
+                            if (data.SendMode == SendMode.Reliable)
                             {
                                 Interlocked.Increment(ref clientsReliableReceived);
-                                Interlocked.Add(ref clientsReliableBytesReceived, reader.Length);
+                                Interlocked.Add(ref clientsReliableBytesReceived, reader.ReadBytes().Length);
                             }
                             else
                             {
                                 Interlocked.Increment(ref clientsUnreliableReceived);
-                                Interlocked.Add(ref clientsUnreliableBytesReceived, reader.Length);
+                                Interlocked.Add(ref clientsUnreliableBytesReceived, reader.ReadBytes().Length);
                             }
                         }
-                    };
+                    }
+                };
 
-                    client.Disconnected += (sender, e) =>
+                bool connected = false;
+
+                while (processActive)
+                {
+                    if (reliableToSend > 0)
                     {
-                        Interlocked.Increment(ref clientsDisconnectedCount);
-                    };
-
-                    while (processActive)
-                    {
-                        if (reliableToSend > 0)
+                        using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
                         {
-                            using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
-                            {
-                                writer.WriteRaw(messageData, 0, messageData.Length);
+                            writer.WriteRaw(messageData, 0, messageData.Length);
 
-                                using (Message message = Message.Create(0, writer))
-                                    client.SendMessage(message, SendMode.Reliable);
-                            }
-                            Interlocked.Decrement(ref reliableToSend);
-                            Interlocked.Increment(ref reliableSentCount);
-                            Interlocked.Increment(ref clientsReliableSent);
-                            Interlocked.Add(ref clientsReliableBytesSent, messageData.Length);
+                            using (Message message = Message.Create(0, writer))
+                                client.SendMessage(message, SendMode.Reliable);
                         }
 
-                        if (unreliableToSend > 0)
-                        {
-                            using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
-                            {
-                                writer.WriteRaw(messageData, 0, messageData.Length);
-
-                                using (Message message = Message.Create(0, writer))
-                                    client.SendMessage(message, SendMode.Unreliable);
-                            }
-                            Interlocked.Decrement(ref unreliableToSend);
-                            Interlocked.Increment(ref unreliableSentCount);
-                            Interlocked.Increment(ref clientsUnreliableSent);
-                            Interlocked.Add(ref clientsUnreliableBytesSent, messageData.Length);
-                        }
-
-                        await Task.Delay(1000 / sendRate);
+                        Interlocked.Decrement(ref reliableToSend);
+                        Interlocked.Increment(ref reliableSentCount);
+                        Interlocked.Increment(ref clientsReliableSent);
+                        Interlocked.Add(ref clientsReliableBytesSent, messageData.Length);
                     }
 
-                    client.Disconnect();
+                    if (unreliableToSend > 0)
+                    {
+                        using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
+                        {
+                            writer.WriteRaw(messageData, 0, messageData.Length);
+
+                            using (Message message = Message.Create(0, writer))
+                                client.SendMessage(message, SendMode.Unreliable);
+                        }
+
+                        Interlocked.Decrement(ref unreliableToSend);
+                        Interlocked.Increment(ref unreliableSentCount);
+                        Interlocked.Increment(ref clientsUnreliableSent);
+                        Interlocked.Add(ref clientsUnreliableBytesSent, messageData.Length);
+                    }
+
+                    if (reliableToSend > 0 && !reliableIncremented)
+                    {
+                        reliableIncremented = true;
+                        Interlocked.Increment(ref clientsChannelsCount);
+                    }
+                    else if (reliableToSend == 0 && reliableIncremented)
+                    {
+                        reliableIncremented = false;
+                        Interlocked.Decrement(ref clientsChannelsCount);
+                    }
+
+                    if (unreliableToSend > 0 && !unreliableIncremented)
+                    {
+                        unreliableIncremented = true;
+                        Interlocked.Increment(ref clientsChannelsCount);
+                    }
+                    else if (unreliableToSend == 0 && unreliableIncremented)
+                    {
+                        unreliableIncremented = false;
+                        Interlocked.Decrement(ref clientsChannelsCount);
+                    }
+
+                    if (!connected && client.Connected)
+                    {
+                        connected = true;
+                        Interlocked.Increment(ref clientsConnectedCount);
+                        Interlocked.Exchange(ref reliableToSend, reliableMessages);
+                        Interlocked.Exchange(ref unreliableToSend, unreliableMessages);
+                    }
+
+                    await Task.Delay(1000 / sendRate);
                 }
             }, TaskCreationOptions.LongRunning);
         }
