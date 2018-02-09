@@ -24,6 +24,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Runtime;
 using System.Text;
 using System.Threading;
@@ -47,11 +48,15 @@ using ExitGames.Client.Photon;
 // Neutrino (https://github.com/Claytonious/Neutrino)
 using Neutrino.Core;
 using Neutrino.Core.Messages;
+// DarkRift (https://darkriftnetworking.com/DarkRift2)
+using DarkRift;
+using DarkRift.Server;
+using DarkRift.Client;
 
 namespace BenchmarkNet {
 	public class BenchmarkNet {
 		protected const string title = "BenchmarkNet";
-		protected const string version = "1.05";
+		protected const string version = "1.06";
 		protected const string ip = "127.0.0.1";
 		protected static ushort port = 0;
 		protected static ushort maxClients = 0;
@@ -102,7 +107,8 @@ namespace BenchmarkNet {
 			"MiniUDP",
 			"Hazel",
 			"Photon",
-			"Neutrino"
+			"Neutrino",
+			"DarkRift"
 		};
 
 		private static Func<int, string> Space = (value) => (String.Empty.PadRight(value));
@@ -236,8 +242,10 @@ namespace BenchmarkNet {
 				serverThread = new Thread(HazelBenchmark.Server);
 			else if (selectedLibrary == 6)
 				serverThread = new Thread(PhotonBenchmark.Server);
-			else
+			else if (selectedLibrary == 7)
 				serverThread = new Thread(NeutrinoBenchmark.Server);
+			else
+				serverThread = new Thread(DarkRiftBenchmark.Server);
 
 			serverThread.Priority = ThreadPriority.AboveNormal;
 			serverThread.Start();
@@ -381,8 +389,10 @@ namespace BenchmarkNet {
 						clients[i] = HazelBenchmark.Client();
 					else if (selectedLibrary == 6)
 						clients[i] = PhotonBenchmark.Client();
-					else
+					else if (selectedLibrary == 7)
 						clients[i] = NeutrinoBenchmark.Client();
+					else
+						clients[i] = DarkRiftBenchmark.Client();
 					
 					Interlocked.Increment(ref clientsStartedCount);
 					Thread.Sleep(15);
@@ -1515,6 +1525,154 @@ namespace BenchmarkNet {
 
 				while (processActive) {
 					client.Update();
+					Thread.Sleep(1000 / clientTickRate);
+				}
+			}, TaskCreationOptions.LongRunning);
+		}
+	}
+
+	public class DarkRiftBenchmark : BenchmarkNet {
+		public static void Server() {
+			DarkRiftServer server = new DarkRiftServer(new ServerSpawnData(IPAddress.Parse(ip), port, IPVersion.IPv4));
+
+			server.Start();
+
+			server.ClientManager.ClientConnected += (peer, netEvent) => {
+				netEvent.Client.MessageReceived += (sender, data) => {
+					using (Message message = data.GetMessage()) {
+						using (DarkRiftReader reader = message.GetReader()) {
+							if (data.SendMode == SendMode.Reliable) {
+								Interlocked.Increment(ref serverReliableReceived);
+								Interlocked.Add(ref serverReliableBytesReceived, reader.ReadBytes().Length);
+
+								using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length)) {
+									writer.Write(messageData);
+
+									using (Message reliableMessage = Message.Create(0, writer))
+										data.Client.SendMessage(reliableMessage, SendMode.Reliable);
+								}
+
+								Interlocked.Increment(ref serverReliableSent);
+								Interlocked.Add(ref serverReliableBytesSent, messageData.Length);
+							} else if (data.SendMode == SendMode.Unreliable) {
+								Interlocked.Increment(ref serverUnreliableReceived);
+								Interlocked.Add(ref serverUnreliableBytesReceived, reader.ReadBytes().Length);
+
+								using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length)) {
+									writer.Write(messageData);
+
+									using (Message unreliableMessage = Message.Create(0, writer))
+										data.Client.SendMessage(unreliableMessage, SendMode.Unreliable);
+								}
+
+								Interlocked.Increment(ref serverUnreliableSent);
+								Interlocked.Add(ref serverUnreliableBytesSent, messageData.Length);
+							}
+						}
+					}
+				};
+			};
+
+			while (processActive) {
+				server.ExecuteDispatcherTasks();
+				Thread.Sleep(1000 / serverTickRate);
+			}
+		}
+
+		public static async Task Client() {
+			await Task.Factory.StartNew(() => {
+				DarkRiftClient client = new DarkRiftClient();
+				
+				client.Connect(IPAddress.Parse(ip), port, IPVersion.IPv4);
+
+				int reliableToSend = 0;
+				int unreliableToSend = 0;
+				int reliableSentCount = 0;
+				int unreliableSentCount = 0;
+
+				Task.Factory.StartNew(async() => {
+					bool reliableIncremented = false;
+					bool unreliableIncremented = false;
+
+					while (processActive) {
+						if (reliableToSend > 0) {
+							using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length)) {
+								writer.Write(messageData);
+
+								using (Message message = Message.Create(0, writer))
+									client.SendMessage(message, SendMode.Reliable);
+							}
+
+							Interlocked.Decrement(ref reliableToSend);
+							Interlocked.Increment(ref reliableSentCount);
+							Interlocked.Increment(ref clientsReliableSent);
+							Interlocked.Add(ref clientsReliableBytesSent, messageData.Length);
+						}
+
+						if (unreliableToSend > 0) {
+							using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length)) {
+								writer.Write(messageData);
+
+								using (Message message = Message.Create(0, writer))
+									client.SendMessage(message, SendMode.Unreliable);
+							}
+
+							Interlocked.Decrement(ref unreliableToSend);
+							Interlocked.Increment(ref unreliableSentCount);
+							Interlocked.Increment(ref clientsUnreliableSent);
+							Interlocked.Add(ref clientsUnreliableBytesSent, messageData.Length);
+						}
+
+						if (reliableToSend > 0 && !reliableIncremented) {
+							reliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (reliableToSend == 0 && reliableIncremented) {
+							reliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						if (unreliableToSend > 0 && !unreliableIncremented) {
+							unreliableIncremented = true;
+							Interlocked.Increment(ref clientsChannelsCount);
+						} else if (unreliableToSend == 0 && unreliableIncremented) {
+							unreliableIncremented = false;
+							Interlocked.Decrement(ref clientsChannelsCount);
+						}
+
+						await Task.Delay(1000 / sendRate);
+					}
+				}, TaskCreationOptions.AttachedToParent);
+
+				client.Disconnected += (sender, data) => {
+					Interlocked.Increment(ref clientsDisconnectedCount);
+					Interlocked.Exchange(ref reliableToSend, 0);
+					Interlocked.Exchange(ref unreliableToSend, 0);
+				};
+
+				client.MessageReceived += (sender, data) => {
+					using (Message message = data.GetMessage()) {
+						using (DarkRiftReader reader = message.GetReader()) {
+							if (data.SendMode == SendMode.Reliable) {
+								Interlocked.Increment(ref clientsReliableReceived);
+								Interlocked.Add(ref clientsReliableBytesReceived, reader.ReadBytes().Length);
+							} else if (data.SendMode == SendMode.Unreliable) {
+								Interlocked.Increment(ref clientsUnreliableReceived);
+								Interlocked.Add(ref clientsUnreliableBytesReceived, reader.ReadBytes().Length);
+							}
+						}
+					}
+				};
+
+				bool connected = false;
+
+				while (processActive) {
+					if (!connected && client.Connected) {
+						connected = true;
+						Interlocked.Increment(ref clientsConnectedCount);
+						Interlocked.Exchange(ref reliableToSend, reliableMessages);
+						Interlocked.Exchange(ref unreliableToSend, unreliableMessages);
+					}
+
 					Thread.Sleep(1000 / clientTickRate);
 				}
 			}, TaskCreationOptions.LongRunning);
