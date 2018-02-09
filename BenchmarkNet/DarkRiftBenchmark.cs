@@ -88,7 +88,7 @@ namespace BenchmarkNet
 
             while (processActive)
             {
-                server.ExecuteDispatcherTasks();
+                Thread.Yield();
             }
         }
 
