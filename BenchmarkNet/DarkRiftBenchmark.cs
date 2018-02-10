@@ -56,7 +56,7 @@ namespace BenchmarkNet
 
                                 using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
                                 {
-                                    writer.Write(messageData);
+                                    writer.WriteRaw(messageData, 0, messageData.Length);
 
                                     using (Message reliableMessage = Message.Create(0, writer))
                                         data.Client.SendMessage(reliableMessage, SendMode.Reliable);
@@ -72,7 +72,7 @@ namespace BenchmarkNet
 
                                 using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
                                 {
-                                    writer.Write(messageData);
+                                    writer.WriteRaw(messageData, 0, messageData.Length);
 
                                     using (Message unreliableMessage = Message.Create(0, writer))
                                         data.Client.SendMessage(unreliableMessage, SendMode.Unreliable);
@@ -115,7 +115,7 @@ namespace BenchmarkNet
                         {
                             using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
                             {
-                                writer.Write(messageData);
+                                writer.WriteRaw(messageData, 0, messageData.Length);
 
                                 using (Message message = Message.Create(0, writer))
                                     client.SendMessage(message, SendMode.Reliable);
@@ -131,7 +131,7 @@ namespace BenchmarkNet
                         {
                             using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
                             {
-                                writer.Write(messageData);
+                                writer.WriteRaw(messageData, 0, messageData.Length);
 
                                 using (Message message = Message.Create(0, writer))
                                     client.SendMessage(message, SendMode.Unreliable);
