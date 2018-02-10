@@ -47,6 +47,8 @@ namespace BenchmarkNet
         protected const string ip = "127.0.0.1";
         protected static ushort port = 0;
         protected static ushort maxClients = 0;
+        protected static int serverTickRate = 0;
+        protected static int clientTickRate = 0;
         protected static int sendRate = 0;
         protected static int reliableMessages = 0;
         protected static int unreliableMessages = 0;
@@ -129,6 +131,12 @@ namespace BenchmarkNet
                 Console.Write("Simulated clients (default " + defaultMaxClients + "): ");
                 UInt16.TryParse(Console.ReadLine(), out maxClients);
                 
+                Console.Write("Server tick rate (default " + defaultServerTickRate + "): ");
+                Int32.TryParse(Console.ReadLine(), out serverTickRate);
+
+                Console.Write("Client tick rate (default " + defaultClientTickRate + "): ");
+                Int32.TryParse(Console.ReadLine(), out clientTickRate);
+                
                 Console.Write("Client send rate (default " + defaultSendRate + "): ");
                 Int32.TryParse(Console.ReadLine(), out sendRate);
 
@@ -147,7 +155,13 @@ namespace BenchmarkNet
 
             if (maxClients == 0)
                 maxClients = defaultMaxClients;
-            
+
+            if (serverTickRate == 0)
+                serverTickRate = defaultServerTickRate;
+
+            if (clientTickRate == 0)
+                clientTickRate = defaultClientTickRate;
+
             if (sendRate == 0)
                 sendRate = defaultSendRate;
 
