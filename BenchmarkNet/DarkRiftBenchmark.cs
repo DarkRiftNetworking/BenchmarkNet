@@ -52,7 +52,7 @@ namespace BenchmarkNet
                             if (data.SendMode == SendMode.Reliable)
                             {
                                 Interlocked.Increment(ref serverReliableReceived);
-                                Interlocked.Add(ref serverReliableBytesReceived, reader.ReadBytes().Length);
+                                Interlocked.Add(ref serverReliableBytesReceived, reader.Length);
 
                                 using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
                                 {
@@ -68,7 +68,7 @@ namespace BenchmarkNet
                             else if (data.SendMode == SendMode.Unreliable)
                             {
                                 Interlocked.Increment(ref serverUnreliableReceived);
-                                Interlocked.Add(ref serverUnreliableBytesReceived, reader.ReadBytes().Length);
+                                Interlocked.Add(ref serverUnreliableBytesReceived, reader.Length);
 
                                 using (DarkRiftWriter writer = DarkRiftWriter.Create(messageData.Length))
                                 {
@@ -183,12 +183,12 @@ namespace BenchmarkNet
                             if (data.SendMode == SendMode.Reliable)
                             {
                                 Interlocked.Increment(ref clientsReliableReceived);
-                                Interlocked.Add(ref clientsReliableBytesReceived, reader.ReadBytes().Length);
+                                Interlocked.Add(ref clientsReliableBytesReceived, reader.Length);
                             }
                             else if (data.SendMode == SendMode.Unreliable)
                             {
                                 Interlocked.Increment(ref clientsUnreliableReceived);
-                                Interlocked.Add(ref clientsUnreliableBytesReceived, reader.ReadBytes().Length);
+                                Interlocked.Add(ref clientsUnreliableBytesReceived, reader.Length);
                             }
                         }
                     }
